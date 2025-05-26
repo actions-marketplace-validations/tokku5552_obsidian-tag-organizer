@@ -6,30 +6,23 @@ Thank you for your interest in contributing to Obsidian Tag Organizer! This docu
 
 ### Prerequisites
 
-- Node.js (v18.x or v20.x)
-- Yarn (v4.1.1 or later)
+- Node.js (see [.node-version](.node-version) for the required version)
+- Yarn
+- Git
 
 ### Initial Setup
 
 1. Fork and clone the repository:
+
    ```bash
-   git clone https://github.com/your-username/obsidian-tag-organizer.git
+   git clone https://github.com/tokudashinnosuke/obsidian-tag-organizer.git
    cd obsidian-tag-organizer
    ```
 
-2. Enable Yarn Berry:
-   ```bash
-   yarn set version berry
-   ```
+2. Install dependencies:
 
-3. Install dependencies:
    ```bash
    yarn install
-   ```
-
-4. Set up Git hooks:
-   ```bash
-   yarn prepare
    ```
 
 ### Available Scripts
@@ -46,19 +39,22 @@ Thank you for your interest in contributing to Obsidian Tag Organizer! This docu
 ## Development Workflow
 
 1. Create a new branch for your feature or bugfix:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 2. Make your changes and commit them:
+
    ```bash
    git add .
    git commit -m "feat: your feature description"
    ```
 
-   Note: Make sure to commit the `dist/` directory after building the project, as it contains the compiled JavaScript files needed for GitHub Actions.
+   Note: The project uses Git hooks to automatically check the build when committing TypeScript files. If the build fails, the commit will be rejected.
 
 3. Push your changes to your fork:
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -71,12 +67,18 @@ Thank you for your interest in contributing to Obsidian Tag Organizer! This docu
 - Run `yarn lint` and `yarn format` before committing
 - Follow the TypeScript best practices
 - Write tests for new features
+- The project uses Git hooks to automatically:
+  - Format code with Prettier
+  - Check code style with ESLint
+  - Verify the build succeeds
+    when committing TypeScript files
 
 ## Testing
 
 - Write unit tests for new features
 - Ensure all tests pass before submitting a PR
 - Maintain or improve the current test coverage (80%)
+- Use `yarn test:watch` during development for faster feedback
 
 ## Pull Request Process
 
@@ -99,6 +101,7 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/) speci
 - `chore:` for maintenance tasks
 
 Example:
+
 ```
 feat: add support for custom tag patterns
 fix: handle empty front matter correctly
@@ -107,4 +110,4 @@ docs: update README with new configuration options
 
 ## Questions or Problems?
 
-If you have any questions or run into any problems, please open an issue in the GitHub repository. 
+If you have any questions or run into any problems, please open an issue in the GitHub repository. We'll do our best to help you get started with contributing to the project.

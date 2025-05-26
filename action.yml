@@ -10,11 +10,11 @@ inputs:
     required: false
     default: '.'
   exclude-folders:
-    description: 'Comma-separated list of folders to exclude'
+    description: 'List of folders to exclude (YAML list format)'
     required: false
     default: ''
   forbidden-tags:
-    description: 'Comma-separated list of tags that should not be used'
+    description: 'List of tags that should not be used (YAML list format)'
     required: false
     default: ''
   model:
