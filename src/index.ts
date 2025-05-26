@@ -10,12 +10,12 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// タグ整理の対象フォルダ
+// Target folders for tag organization
 const TARGET_FOLDERS: string[] = ["Clippings", "Daily", "Zettelkasten"];
-// 除外フォルダ
+// Folders to exclude
 const EXCLUDE_FOLDERS: string[] = ["Template"];
 
-// 禁止タグ
+// Forbidden tags
 const FORBIDDEN_TAGS: string[] = [
   "TODO",
   "ROUTINE",
@@ -72,24 +72,24 @@ async function analyzeContentWithAI(
   temperature: number
 ): Promise<TagSuggestion[] | null> {
   const prompt = `
-以下のテキストを分析し、タグを提案してください。
-タグのルール:
-- 小文字のみ使用
-- スペースは使用せず、単語間はハイフン(-)で区切る
-- 内容タグのみを使用（状態タグや時間タグは使用しない）
-- 単数形を基本とする
-- 特殊文字はハイフン(-)、アンダースコア(_)、スラッシュ(/)のみ使用可能
-- 最大5つまでのタグを提案
-- 以下のタグは使用禁止: ${forbiddenTags.join(", ")}
+Please analyze the following text and suggest tags.
+Tag rules:
+- Use lowercase only
+- Use hyphens (-) instead of spaces between words
+- Use only content tags (no status or time tags)
+- Use singular form as default
+- Only use special characters: hyphen (-), underscore (_), and slash (/)
+- Suggest maximum 5 tags
+- The following tags are forbidden: ${forbiddenTags.join(", ")}
 
-テキスト:
+Text:
 ${content}
 
-タグを以下の形式で返してください（yaml形式）:
+Please return tags in the following format (yaml):
 suggestions:
   - original: "current-tag"
     suggested: "new-tag"
-    reason: "変更理由"
+    reason: "reason for change"
 `;
 
   try {
@@ -99,7 +99,7 @@ suggestions:
         {
           role: "system",
           content:
-            "あなたはテキスト分析の専門家です。与えられたテキストから適切なタグを提案してください。",
+            "You are a text analysis expert. Please suggest appropriate tags for the given text.",
         },
         {
           role: "user",

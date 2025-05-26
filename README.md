@@ -1,27 +1,27 @@
 # Obsidian Tag Organizer
 
-Obsidian のタグを自動的に整理する GitHub Actions です。OpenAI API を使用して、タグの一貫性を保ち、より良いタグ構造を提案します。
+A GitHub Action that automatically organizes tags in Obsidian. It uses the OpenAI API to maintain tag consistency and suggest better tag structures.
 
-## 機能
+## Features
 
-- 指定したフォルダ内の Obsidian ファイルからタグを抽出
-- OpenAI API を使用してタグの改善を提案
-- カスタマイズ可能な設定（対象フォルダ、除外フォルダ、禁止タグなど）
-- タグの変更履歴の追跡
+- Extract tags from Obsidian files in specified folders
+- Suggest tag improvements using OpenAI API
+- Customizable settings (target folders, excluded folders, forbidden tags, etc.)
+- Track tag change history
 
-## 使用方法
+## Usage
 
-### 1. ワークフローの設定
+### 1. Workflow Setup
 
-`.github/workflows/tag-organizer.yml`に以下のようなワークフローを追加します：
+Add the following workflow to `.github/workflows/tag-organizer.yml`:
 
 ```yaml
 name: Organize Tags
 
 on:
   schedule:
-    - cron: "0 0 * * *" # 毎日実行
-  workflow_dispatch: # 手動実行も可能
+    - cron: "0 0 * * *" # Runs daily
+  workflow_dispatch: # Manual execution also possible
 
 jobs:
   organize-tags:
@@ -38,23 +38,23 @@ jobs:
           temperature: "0.7"
 ```
 
-### 2. 必要な設定
+### 2. Required Configuration
 
-#### 必須パラメータ
+#### Required Parameters
 
-- `openai-api-key`: OpenAI API キー（GitHub Secrets に保存することを推奨）
+- `openai-api-key`: OpenAI API key (recommended to store in GitHub Secrets)
 
-#### オプションパラメータ
+#### Optional Parameters
 
-- `target-folder`: タグ整理の対象フォルダ（デフォルト: "."）
-- `exclude-folders`: 除外するフォルダ（カンマ区切り）
-- `forbidden-tags`: 使用を禁止するタグ（カンマ区切り）
-- `model`: 使用する OpenAI モデル（デフォルト: "gpt-4"）
-- `temperature`: OpenAI API の温度パラメータ（デフォルト: 0.7）
+- `target-folder`: Target folder for tag organization (default: ".")
+- `exclude-folders`: Folders to exclude (comma-separated)
+- `forbidden-tags`: Tags to forbid (comma-separated)
+- `model`: OpenAI model to use (default: "gpt-4")
+- `temperature`: OpenAI API temperature parameter (default: 0.7)
 
-## 使用例
+## Examples
 
-### 基本的な使用例
+### Basic Usage
 
 ```yaml
 - uses: your-username/obsidian-tag-organizer@v1
@@ -62,7 +62,7 @@ jobs:
     openai-api-key: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-### カスタマイズ例
+### Customized Example
 
 ```yaml
 - uses: your-username/obsidian-tag-organizer@v1
@@ -75,10 +75,10 @@ jobs:
     temperature: "0.5"
 ```
 
-## ライセンス
+## License
 
 MIT License
 
-## 貢献
+## Contributing
 
-プルリクエストやイシューは大歓迎です！
+Pull requests and issues are welcome!
