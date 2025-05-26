@@ -27,7 +27,7 @@ jobs:
   organize-tags:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: your-username/obsidian-tag-organizer@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -51,6 +51,40 @@ jobs:
 - `forbidden-tags`: Tags to forbid (comma-separated)
 - `model`: OpenAI model to use (default: "gpt-4")
 - `temperature`: OpenAI API temperature parameter (default: 0.7)
+
+## Development
+
+### Prerequisites
+
+- Node.js (v18.x or v20.x)
+- Yarn (v4.1.1 or later)
+
+### Setup
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/obsidian-tag-organizer.git
+   cd obsidian-tag-organizer
+   ```
+
+2. Install dependencies:
+   ```bash
+   yarn install
+   ```
+
+3. Build the project:
+   ```bash
+   yarn build
+   ```
+
+### Available Scripts
+
+- `yarn build` - Build the TypeScript code
+- `yarn test` - Run tests
+- `yarn lint` - Run ESLint
+- `yarn format` - Format code with Prettier
+
+For more detailed information about development and contributing, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Examples
 
@@ -81,4 +115,4 @@ MIT License
 
 ## Contributing
 
-Pull requests and issues are welcome!
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
