@@ -56,31 +56,29 @@ jobs:
 
 ### Prerequisites
 
-- Node.js (v18.x or v20.x)
-- Yarn (v4.1.1 or later)
+- Node.js (see [.node-version](.node-version) for the required version)
+- Yarn
 - Git
 
 ### Setup
 
 1. Clone the repository:
 
-```bash
-git clone https://github.com/tokudashinnosuke/obsidian-tag-organizer.git
-cd obsidian-tag-organizer
-```
+   ```bash
+   git clone https://github.com/tokudashinnosuke/obsidian-tag-organizer.git
+   cd obsidian-tag-organizer
+   ```
 
-2. Enable Yarn Berry and install dependencies:
+2. Install dependencies:
 
-```bash
-yarn set version berry
-yarn install
-```
+   ```bash
+   yarn install
+   ```
 
 3. Build the project:
-
-```bash
-yarn build
-```
+   ```bash
+   yarn build
+   ```
 
 ### Available Scripts
 
@@ -92,6 +90,15 @@ yarn build
 - `yarn format` - Format code with Prettier
 - `yarn format:check` - Check code formatting
 - `yarn clean` - Clean build artifacts
+
+### Git Hooks
+
+The project uses Git hooks to automatically:
+
+- Format code with Prettier
+- Check code style with ESLint
+- Verify the build succeeds
+  when committing TypeScript files.
 
 For more detailed information about development and contributing, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 

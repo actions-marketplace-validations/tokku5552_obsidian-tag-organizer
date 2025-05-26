@@ -51,7 +51,7 @@ Thank you for your interest in contributing to Obsidian Tag Organizer! This docu
    git commit -m "feat: your feature description"
    ```
 
-   Note: Make sure to commit the `dist/` directory after building the project, as it contains the compiled JavaScript files needed for GitHub Actions.
+   Note: The project uses Git hooks to automatically check the build when committing TypeScript files. If the build fails, the commit will be rejected.
 
 3. Push your changes to your fork:
 
@@ -67,6 +67,11 @@ Thank you for your interest in contributing to Obsidian Tag Organizer! This docu
 - Run `yarn lint` and `yarn format` before committing
 - Follow the TypeScript best practices
 - Write tests for new features
+- The project uses Git hooks to automatically:
+  - Format code with Prettier
+  - Check code style with ESLint
+  - Verify the build succeeds
+    when committing TypeScript files
 
 ## Testing
 
