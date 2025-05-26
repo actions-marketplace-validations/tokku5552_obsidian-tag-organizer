@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: your-username/obsidian-tag-organizer@v1
+      - uses: tokudashinnosuke/obsidian-tag-organizer@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           target-folder: 'notes'
@@ -58,34 +58,40 @@ jobs:
 
 - Node.js (v18.x or v20.x)
 - Yarn (v4.1.1 or later)
+- Git
 
 ### Setup
 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/obsidian-tag-organizer.git
+git clone https://github.com/tokudashinnosuke/obsidian-tag-organizer.git
 cd obsidian-tag-organizer
 ```
 
-2. Install dependencies:
+2. Enable Yarn Berry and install dependencies:
 
 ```bash
+yarn set version berry
 yarn install
 ```
 
 3. Build the project:
 
 ```bash
-   yarn build
+yarn build
 ```
 
 ### Available Scripts
 
 - `yarn build` - Build the TypeScript code
 - `yarn test` - Run tests
+- `yarn test:watch` - Run tests in watch mode
 - `yarn lint` - Run ESLint
+- `yarn lint:fix` - Fix ESLint issues
 - `yarn format` - Format code with Prettier
+- `yarn format:check` - Check code formatting
+- `yarn clean` - Clean build artifacts
 
 For more detailed information about development and contributing, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -94,7 +100,7 @@ For more detailed information about development and contributing, please see [CO
 ### Basic Usage
 
 ```yaml
-- uses: your-username/obsidian-tag-organizer@v1
+- uses: tokudashinnosuke/obsidian-tag-organizer@v1
   with:
     openai-api-key: ${{ secrets.OPENAI_API_KEY }}
 ```
@@ -102,7 +108,7 @@ For more detailed information about development and contributing, please see [CO
 ### Customized Example
 
 ```yaml
-- uses: your-username/obsidian-tag-organizer@v1
+- uses: tokudashinnosuke/obsidian-tag-organizer@v1
   with:
     openai-api-key: ${{ secrets.OPENAI_API_KEY }}
     target-folder: 'my-notes'
@@ -114,7 +120,7 @@ For more detailed information about development and contributing, please see [CO
 
 ## License
 
-MIT License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
