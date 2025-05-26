@@ -1,0 +1,58 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Development Workflow
+
+## Getting Started
+
+1. Install dependencies:
+   ```bash
+   yarn install
+   ```
+
+2. Set up Git hooks:
+   ```bash
+   yarn husky install
+   ```
+
+## Development Process
+
+1. **Code Style**
+   - Follow the ESLint rules in [.eslintrc.json](mdc:.eslintrc.json)
+   - Use Prettier for formatting (configured in [.prettierrc](mdc:.prettierrc))
+   - Run `yarn lint` to check code style
+
+2. **Testing**
+   - Write tests in [src/__tests__/](mdc:src/__tests__)
+   - Run tests with `yarn test`
+   - Check coverage with `yarn test:coverage`
+
+3. **Building**
+   - Build the project with `yarn build`
+   - Output goes to the `dist/` directory
+
+## Git Workflow
+
+1. **Branches**
+   - `main`: Production-ready code
+   - `feat/*`: New features
+   - `fix/*`: Bug fixes
+   - `chore/*`: Maintenance tasks
+
+2. **Commits**
+   - Follow conventional commits
+   - Run `yarn commit` for guided commit messages
+
+3. **Pull Requests**
+   - Create PRs from feature/fix branches
+   - Ensure all tests pass
+   - Update documentation as needed
+
+## Release Process
+
+1. Update version in [package.json](mdc:package.json)
+2. Update [action.yml](mdc:action.yml) if needed
+3. Create a new release tag
+4. Deploy to GitHub Actions marketplace

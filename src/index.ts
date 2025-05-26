@@ -1,59 +1,40 @@
-import { promises as fs } from "fs";
-import * as fsSync from "fs";
-import path from "path";
-import { OpenAI } from "openai";
-import yaml from "js-yaml";
-import { parseInputs, DEFAULT_CONFIG } from "./config";
-import { FrontMatter, TagSuggestion, TagChange } from "./types";
+import { promises as fs } from 'fs';
+import path from 'path';
+import { OpenAI } from 'openai';
+import yaml from 'js-yaml';
+import { parseInputs } from './config';
+import { FrontMatter, TagSuggestion, TagChange } from './types';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// タグ整理の対象フォルダ
-const TARGET_FOLDERS: string[] = ["Clippings", "Daily", "Zettelkasten"];
-// 除外フォルダ
-const EXCLUDE_FOLDERS: string[] = ["Template"];
-
-// 禁止タグ
-const FORBIDDEN_TAGS: string[] = [
-  "TODO",
-  "ROUTINE",
-  "JOURNAL",
-  "STUDY",
-  "EXERCISE",
-];
-
-async function readFile(filePath: string): Promise<string | null> {
+export async function readFile(filePath: string): Promise<string | null> {
   try {
-    return await fs.readFile(filePath, "utf8");
+    return await fs.readFile(filePath, 'utf8');
   } catch (error) {
     console.error(`Error reading ${filePath}:`, error);
     return null;
   }
 }
 
-async function writeFile(filePath: string, content: string): Promise<void> {
+export async function writeFile(filePath: string, content: string): Promise<void> {
   try {
-    await fs.writeFile(filePath, content, "utf8");
+    await fs.writeFile(filePath, content, 'utf8');
   } catch (error) {
     console.error(`Error writing ${filePath}:`, error);
   }
 }
 
-function extractFrontMatter(content: string): FrontMatter | null {
+export function extractFrontMatter(content: string): FrontMatter | null {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return null;
 
   try {
     return yaml.load(match[1]) as FrontMatter;
   } catch (error) {
-    console.error("Error parsing front matter:", error);
+    console.error('Error parsing front matter:', error);
     return null;
   }
 }
 
-function updateFrontMatter(content: string, newTags: string[]): string {
+export function updateFrontMatter(content: string, newTags: string[]): string {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return content;
 
@@ -64,7 +45,7 @@ function updateFrontMatter(content: string, newTags: string[]): string {
   return content.replace(match[0], `---\n${newFrontMatter}---`);
 }
 
-async function analyzeContentWithAI(
+export async function analyzeContentWithAI(
   content: string,
   openai: OpenAI,
   forbiddenTags: string[],
@@ -72,24 +53,24 @@ async function analyzeContentWithAI(
   temperature: number
 ): Promise<TagSuggestion[] | null> {
   const prompt = `
-以下のテキストを分析し、タグを提案してください。
-タグのルール:
-- 小文字のみ使用
-- スペースは使用せず、単語間はハイフン(-)で区切る
-- 内容タグのみを使用（状態タグや時間タグは使用しない）
-- 単数形を基本とする
-- 特殊文字はハイフン(-)、アンダースコア(_)、スラッシュ(/)のみ使用可能
-- 最大5つまでのタグを提案
-- 以下のタグは使用禁止: ${forbiddenTags.join(", ")}
+Please analyze the following text and suggest tags.
+Tag rules:
+- Use lowercase only
+- Use hyphens (-) instead of spaces between words
+- Use only content tags (no status or time tags)
+- Use singular form as default
+- Only use special characters: hyphen (-), underscore (_), and slash (/)
+- Suggest maximum 5 tags
+- The following tags are forbidden: ${forbiddenTags.join(', ')}
 
-テキスト:
+Text:
 ${content}
 
-タグを以下の形式で返してください（yaml形式）:
+Please return tags in the following format (yaml):
 suggestions:
   - original: "current-tag"
     suggested: "new-tag"
-    reason: "変更理由"
+    reason: "reason for change"
 `;
 
   try {
@@ -97,12 +78,12 @@ suggestions:
       model,
       messages: [
         {
-          role: "system",
+          role: 'system',
           content:
-            "あなたはテキスト分析の専門家です。与えられたテキストから適切なタグを提案してください。",
+            'You are a text analysis expert. Please suggest appropriate tags for the given text.',
         },
         {
-          role: "user",
+          role: 'user',
           content: prompt,
         },
       ],
@@ -119,16 +100,16 @@ suggestions:
       const parsed = yaml.load(match[0]) as { suggestions: TagSuggestion[] };
       return parsed.suggestions || [];
     } catch (error) {
-      console.error("Error parsing AI response:", error);
+      console.error('Error parsing AI response:', error);
       return null;
     }
   } catch (error) {
-    console.error("Error calling OpenAI API:", error);
+    console.error('Error calling OpenAI API:', error);
     return null;
   }
 }
 
-async function processFile(
+export async function processFile(
   filePath: string,
   openai: OpenAI,
   forbiddenTags: string[],
@@ -175,7 +156,7 @@ async function processFile(
   return changes;
 }
 
-async function processDirectory(
+export async function processDirectory(
   dirPath: string,
   excludeFolders: string[],
   openai: OpenAI,
@@ -201,14 +182,8 @@ async function processDirectory(
         );
         changes.push(...subChanges);
       }
-    } else if (entry.isFile() && entry.name.endsWith(".md")) {
-      const fileChanges = await processFile(
-        fullPath,
-        openai,
-        forbiddenTags,
-        model,
-        temperature
-      );
+    } else if (entry.isFile() && entry.name.endsWith('.md')) {
+      const fileChanges = await processFile(fullPath, openai, forbiddenTags, model, temperature);
       if (fileChanges) {
         changes.push(...fileChanges);
       }
@@ -225,10 +200,10 @@ async function main(): Promise<void> {
       apiKey: inputs.openaiApiKey,
     });
 
-    console.log("Starting tag organization...");
+    console.log('Starting tag organization...');
     console.log(`Target folder: ${inputs.targetFolder}`);
-    console.log(`Exclude folders: ${inputs.excludeFolders.join(", ")}`);
-    console.log(`Forbidden tags: ${inputs.forbiddenTags.join(", ")}`);
+    console.log(`Exclude folders: ${inputs.excludeFolders.join(', ')}`);
+    console.log(`Forbidden tags: ${inputs.forbiddenTags.join(', ')}`);
 
     const changes = await processDirectory(
       inputs.targetFolder,
@@ -240,17 +215,19 @@ async function main(): Promise<void> {
     );
 
     if (changes.length > 0) {
-      console.log("\nTag changes made:");
+      console.log('\nTag changes made:');
       changes.forEach((change) => {
         console.log(`${change.file}: ${change.oldTag} -> ${change.newTag}`);
       });
     } else {
-      console.log("\nNo tag changes were necessary.");
+      console.log('\nNo tag changes were necessary.');
     }
   } catch (error) {
-    console.error("Error:", error);
+    console.error('Error:', error);
     process.exit(1);
   }
 }
 
-main().catch(console.error);
+if (require.main === module) {
+  main().catch(console.error);
+}

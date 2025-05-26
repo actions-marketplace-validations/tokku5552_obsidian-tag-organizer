@@ -1,0 +1,48 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Application Logic
+
+## Core Functionality
+
+The main application logic is implemented in [src/index.ts](mdc:src/index.ts), which handles:
+
+1. Reading and parsing Obsidian markdown files
+2. Processing and organizing tags
+3. Writing changes back to files
+
+## Configuration
+
+The application's behavior is controlled through configuration defined in [src/config.ts](mdc:src/config.ts), which includes:
+
+- Tag organization rules
+- File patterns to process
+- Output formatting options
+
+## Type System
+
+The type system is defined in [src/types.ts](mdc:src/types.ts) and includes:
+
+- Tag-related interfaces
+- Configuration types
+- File processing types
+
+## GitHub Action Integration
+
+The GitHub Action configuration in [action.yml](mdc:action.yml) defines:
+
+- Input parameters
+- Output values
+- Action metadata
+- Runtime environment
+
+## Testing Strategy
+
+The test suite in [src/__tests__/](mdc:src/__tests__) covers:
+
+- Unit tests for individual components
+- Integration tests for file processing
+- Configuration validation tests
+- Tag organization logic tests
