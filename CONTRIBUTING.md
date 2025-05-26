@@ -28,7 +28,6 @@ Thank you for your interest in contributing to Obsidian Tag Organizer! This docu
 ### Available Scripts
 
 - `yarn build` - Build the TypeScript code
-- `yarn start` - Run the application
 - `yarn test` - Run tests
 - `yarn test:watch` - Run tests in watch mode
 - `yarn lint` - Run ESLint

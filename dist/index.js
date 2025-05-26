@@ -3,29 +3,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.readFile = readFile;
+exports.writeFile = writeFile;
+exports.extractFrontMatter = extractFrontMatter;
+exports.updateFrontMatter = updateFrontMatter;
+exports.analyzeContentWithAI = analyzeContentWithAI;
+exports.processFile = processFile;
+exports.processDirectory = processDirectory;
 const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
 const openai_1 = require("openai");
 const js_yaml_1 = __importDefault(require("js-yaml"));
 const config_1 = require("./config");
-const openai = new openai_1.OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-// タグ整理の対象フォルダ
-const TARGET_FOLDERS = ["Clippings", "Daily", "Zettelkasten"];
-// 除外フォルダ
-const EXCLUDE_FOLDERS = ["Template"];
-// 禁止タグ
-const FORBIDDEN_TAGS = [
-    "TODO",
-    "ROUTINE",
-    "JOURNAL",
-    "STUDY",
-    "EXERCISE",
-];
 async function readFile(filePath) {
     try {
-        return await fs_1.promises.readFile(filePath, "utf8");
+        return await fs_1.promises.readFile(filePath, 'utf8');
     }
     catch (error) {
         console.error(`Error reading ${filePath}:`, error);
@@ -34,7 +26,7 @@ async function readFile(filePath) {
 }
 async function writeFile(filePath, content) {
     try {
-        await fs_1.promises.writeFile(filePath, content, "utf8");
+        await fs_1.promises.writeFile(filePath, content, 'utf8');
     }
     catch (error) {
         console.error(`Error writing ${filePath}:`, error);
@@ -48,7 +40,7 @@ function extractFrontMatter(content) {
         return js_yaml_1.default.load(match[1]);
     }
     catch (error) {
-        console.error("Error parsing front matter:", error);
+        console.error('Error parsing front matter:', error);
         return null;
     }
 }
@@ -63,35 +55,35 @@ function updateFrontMatter(content, newTags) {
 }
 async function analyzeContentWithAI(content, openai, forbiddenTags, model, temperature) {
     const prompt = `
-以下のテキストを分析し、タグを提案してください。
-タグのルール:
-- 小文字のみ使用
-- スペースは使用せず、単語間はハイフン(-)で区切る
-- 内容タグのみを使用（状態タグや時間タグは使用しない）
-- 単数形を基本とする
-- 特殊文字はハイフン(-)、アンダースコア(_)、スラッシュ(/)のみ使用可能
-- 最大5つまでのタグを提案
-- 以下のタグは使用禁止: ${forbiddenTags.join(", ")}
+Please analyze the following text and suggest tags.
+Tag rules:
+- Use lowercase only
+- Use hyphens (-) instead of spaces between words
+- Use only content tags (no status or time tags)
+- Use singular form as default
+- Only use special characters: hyphen (-), underscore (_), and slash (/)
+- Suggest maximum 5 tags
+- The following tags are forbidden: ${forbiddenTags.join(', ')}
 
-テキスト:
+Text:
 ${content}
 
-タグを以下の形式で返してください（yaml形式）:
+Please return tags in the following format (yaml):
 suggestions:
   - original: "current-tag"
     suggested: "new-tag"
-    reason: "変更理由"
+    reason: "reason for change"
 `;
     try {
         const response = await openai.chat.completions.create({
             model,
             messages: [
                 {
-                    role: "system",
-                    content: "あなたはテキスト分析の専門家です。与えられたテキストから適切なタグを提案してください。",
+                    role: 'system',
+                    content: 'You are a text analysis expert. Please suggest appropriate tags for the given text.',
                 },
                 {
-                    role: "user",
+                    role: 'user',
                     content: prompt,
                 },
             ],
@@ -108,12 +100,12 @@ suggestions:
             return parsed.suggestions || [];
         }
         catch (error) {
-            console.error("Error parsing AI response:", error);
+            console.error('Error parsing AI response:', error);
             return null;
         }
     }
     catch (error) {
-        console.error("Error calling OpenAI API:", error);
+        console.error('Error calling OpenAI API:', error);
         return null;
     }
 }
@@ -158,7 +150,7 @@ async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, 
                 changes.push(...subChanges);
             }
         }
-        else if (entry.isFile() && entry.name.endsWith(".md")) {
+        else if (entry.isFile() && entry.name.endsWith('.md')) {
             const fileChanges = await processFile(fullPath, openai, forbiddenTags, model, temperature);
             if (fileChanges) {
                 changes.push(...fileChanges);
@@ -173,24 +165,26 @@ async function main() {
         const openai = new openai_1.OpenAI({
             apiKey: inputs.openaiApiKey,
         });
-        console.log("Starting tag organization...");
+        console.log('Starting tag organization...');
         console.log(`Target folder: ${inputs.targetFolder}`);
-        console.log(`Exclude folders: ${inputs.excludeFolders.join(", ")}`);
-        console.log(`Forbidden tags: ${inputs.forbiddenTags.join(", ")}`);
+        console.log(`Exclude folders: ${inputs.excludeFolders.join(', ')}`);
+        console.log(`Forbidden tags: ${inputs.forbiddenTags.join(', ')}`);
         const changes = await processDirectory(inputs.targetFolder, inputs.excludeFolders, openai, inputs.forbiddenTags, inputs.model, inputs.temperature);
         if (changes.length > 0) {
-            console.log("\nTag changes made:");
+            console.log('\nTag changes made:');
             changes.forEach((change) => {
                 console.log(`${change.file}: ${change.oldTag} -> ${change.newTag}`);
             });
         }
         else {
-            console.log("\nNo tag changes were necessary.");
+            console.log('\nNo tag changes were necessary.');
         }
     }
     catch (error) {
-        console.error("Error:", error);
+        console.error('Error:', error);
         process.exit(1);
     }
 }
-main().catch(console.error);
+if (require.main === module) {
+    main().catch(console.error);
+}
