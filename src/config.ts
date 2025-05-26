@@ -1,11 +1,26 @@
 import { ActionInputs } from './types';
+import * as yaml from 'js-yaml';
+
+function parseYamlList(input: string): string[] {
+  try {
+    // Try to parse as YAML list
+    const parsed = yaml.load(input) as string[];
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+  } catch {
+    // If parsing fails, fall back to comma-separated string
+    return input.split(',').filter(Boolean);
+  }
+  return [];
+}
 
 export function parseInputs(): ActionInputs {
   const inputs: ActionInputs = {
     openaiApiKey: process.env.INPUT_OPENAI_API_KEY || '',
     targetFolder: process.env.INPUT_TARGET_FOLDER || '.',
-    excludeFolders: (process.env.INPUT_EXCLUDE_FOLDERS || '').split(',').filter(Boolean),
-    forbiddenTags: (process.env.INPUT_FORBIDDEN_TAGS || '').split(',').filter(Boolean),
+    excludeFolders: parseYamlList(process.env.INPUT_EXCLUDE_FOLDERS || ''),
+    forbiddenTags: parseYamlList(process.env.INPUT_FORBIDDEN_TAGS || ''),
     model: process.env.INPUT_MODEL || 'gpt-4',
     temperature: parseFloat(process.env.INPUT_TEMPERATURE || '0.7'),
   };

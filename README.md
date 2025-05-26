@@ -32,8 +32,14 @@ jobs:
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           target-folder: 'notes'
-          exclude-folders: 'drafts,templates'
-          forbidden-tags: 'draft,temp'
+          exclude-folders:
+            - drafts
+            - templates
+            - private
+          forbidden-tags:
+            - draft
+            - temp
+            - test
           model: 'gpt-4'
           temperature: '0.7'
 ```
@@ -47,8 +53,8 @@ jobs:
 #### Optional Parameters
 
 - `target-folder`: Target folder for tag organization (default: ".")
-- `exclude-folders`: Folders to exclude (comma-separated)
-- `forbidden-tags`: Tags to forbid (comma-separated)
+- `exclude-folders`: Folders to exclude (YAML list)
+- `forbidden-tags`: Tags to forbid (YAML list)
 - `model`: OpenAI model to use (default: "gpt-4")
 - `temperature`: OpenAI API temperature parameter (default: 0.7)
 
@@ -119,8 +125,14 @@ For more detailed information about development and contributing, please see [CO
   with:
     openai-api-key: ${{ secrets.OPENAI_API_KEY }}
     target-folder: 'my-notes'
-    exclude-folders: 'archive,private'
-    forbidden-tags: 'draft,temp,test'
+    exclude-folders:
+      - archive
+      - private
+      - drafts
+    forbidden-tags:
+      - draft
+      - temp
+      - test
     model: 'gpt-3.5-turbo'
     temperature: '0.5'
 ```
