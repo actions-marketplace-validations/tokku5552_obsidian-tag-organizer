@@ -7,35 +7,40 @@ on:
         branches: [main]
 
 jobs:
-    test:
+    setup:
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                node-version: [18.x, 20.x]
-
         steps:
             - uses: actions/checkout@v4
 
-            - name: Use Node.js ${{ matrix.node-version }}
+            - name: Use Node.js 20.19.0
               uses: actions/setup-node@v4
               with:
-                  node-version: ${{ matrix.node-version }}
+                  node-version: 20.19.0
                   cache: "yarn"
 
             - name: Install dependencies
               run: yarn install --frozen-lockfile
 
+    lint:
+        needs: setup
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
             - name: Run linting
               run: yarn lint
 
+    format:
+        needs: setup
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
             - name: Check formatting
               run: yarn format:check
 
+    test:
+        needs: setup
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
             - name: Run tests
-              run: yarn test
-
-            - name: Upload coverage reports
-              uses: codecov/codecov-action@v4
-              with:
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: true 
+              run: yarn test 

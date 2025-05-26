@@ -20,7 +20,7 @@ name: Organize Tags
 
 on:
   schedule:
-    - cron: "0 0 * * *" # Runs daily
+    - cron: '0 0 * * *' # Runs daily
   workflow_dispatch: # Manual execution also possible
 
 jobs:
@@ -31,11 +31,11 @@ jobs:
       - uses: your-username/obsidian-tag-organizer@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          target-folder: "notes"
-          exclude-folders: "drafts,templates"
-          forbidden-tags: "draft,temp"
-          model: "gpt-4"
-          temperature: "0.7"
+          target-folder: 'notes'
+          exclude-folders: 'drafts,templates'
+          forbidden-tags: 'draft,temp'
+          model: 'gpt-4'
+          temperature: '0.7'
 ```
 
 ### 2. Required Configuration
@@ -62,12 +62,14 @@ jobs:
 ### Setup
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/your-username/obsidian-tag-organizer.git
    cd obsidian-tag-organizer
    ```
 
 2. Install dependencies:
+
    ```bash
    yarn install
    ```
@@ -102,11 +104,11 @@ For more detailed information about development and contributing, please see [CO
 - uses: your-username/obsidian-tag-organizer@v1
   with:
     openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-    target-folder: "my-notes"
-    exclude-folders: "archive,private"
-    forbidden-tags: "draft,temp,test"
-    model: "gpt-3.5-turbo"
-    temperature: "0.5"
+    target-folder: 'my-notes'
+    exclude-folders: 'archive,private'
+    forbidden-tags: 'draft,temp,test'
+    model: 'gpt-3.5-turbo'
+    temperature: '0.5'
 ```
 
 ## License
