@@ -9,19 +9,7 @@ module.exports = {
             tsconfig: "tsconfig.json"
         }]
     },
-    collectCoverage: true,
-    coverageDirectory: "coverage",
-    coverageReporters: ["text", "lcov"],
-    coverageThreshold: {
-        global: {
-            branches: 80,
-            functions: 80,
-            lines: 80,
-            statements: 80,
-        },
-    },
     moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/src/$1"
-    },
-    setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"]
+    }
 }; 

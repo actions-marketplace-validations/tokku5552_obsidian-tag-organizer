@@ -1,6 +1,6 @@
 export interface FrontMatter {
   tags?: string[];
-  [key: string]: any;
+  [key: string]: string | string[] | number | boolean | undefined;
 }
 
 export interface Tag {
