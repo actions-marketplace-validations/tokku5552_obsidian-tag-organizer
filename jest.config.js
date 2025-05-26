@@ -5,7 +5,9 @@ module.exports = {
     roots: ["<rootDir>/src"],
     testMatch: ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
     transform: {
-        "^.+\\.ts$": "ts-jest",
+        "^.+\\.ts$": ["ts-jest", {
+            tsconfig: "tsconfig.json"
+        }]
     },
     collectCoverage: true,
     coverageDirectory: "coverage",
@@ -18,4 +20,8 @@ module.exports = {
             statements: 80,
         },
     },
+    moduleNameMapper: {
+        "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"]
 }; 
