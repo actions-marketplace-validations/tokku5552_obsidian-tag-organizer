@@ -1,0 +1,35 @@
+name: 'Obsidian Tag Organizer'
+description: 'Automatically organize Obsidian tags using OpenAI API'
+
+inputs:
+  openai-api-key:
+    description: 'OpenAI API Key'
+    required: true
+  target-folder:
+    description: 'Target folder to organize tags (default: ".")'
+    required: false
+    default: '.'
+  exclude-folders:
+    description: 'Comma-separated list of folders to exclude'
+    required: false
+    default: ''
+  forbidden-tags:
+    description: 'Comma-separated list of tags that should not be used'
+    required: false
+    default: ''
+  model:
+    description: 'OpenAI model to use (default: "gpt-4")'
+    required: false
+    default: 'gpt-4'
+  temperature:
+    description: 'Temperature for OpenAI API (default: 0.7)'
+    required: false
+    default: '0.7'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'tag'
+  color: 'blue' 

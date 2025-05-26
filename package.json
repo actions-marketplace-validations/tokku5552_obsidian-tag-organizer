@@ -1,0 +1,21 @@
+{
+    "name": "obsidian-tag-organizer",
+    "version": "1.0.0",
+    "description": "Obsidianのタグ整理ツール",
+    "main": "dist/update_tags.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/update_tags.js",
+        "dev": "ts-node .github/scripts/update_tags.ts"
+    },
+    "dependencies": {
+        "js-yaml": "^4.1.0",
+        "openai": "^4.0.0"
+    },
+    "devDependencies": {
+        "@types/js-yaml": "^4.0.9",
+        "@types/node": "^20.17.50",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.0.0"
+    }
+}
