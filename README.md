@@ -63,21 +63,22 @@ jobs:
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/your-username/obsidian-tag-organizer.git
-   cd obsidian-tag-organizer
-   ```
+```bash
+git clone https://github.com/your-username/obsidian-tag-organizer.git
+cd obsidian-tag-organizer
+```
 
 2. Install dependencies:
 
-   ```bash
-   yarn install
-   ```
+```bash
+yarn install
+```
 
 3. Build the project:
-   ```bash
+
+```bash
    yarn build
-   ```
+```
 
 ### Available Scripts
 
