@@ -121,7 +121,7 @@ export async function processFile(
   if (!content) return null;
 
   const frontMatter = extractFrontMatter(content);
-  if (!frontMatter || !frontMatter.tags) {
+  if (!frontMatter) {
     if (skipInvalidFrontmatter) {
       console.log(`Skipping ${filePath} due to invalid front matter`);
       return null;
@@ -129,7 +129,12 @@ export async function processFile(
     throw new Error(`Invalid front matter in ${filePath}`);
   }
 
-  const currentTags = frontMatter.tags;
+  // Skip if tags already exist
+  if (frontMatter.tags && frontMatter.tags.length > 0) {
+    console.log(`Skipping ${filePath} as it already has tags`);
+    return null;
+  }
+
   const suggestions = await analyzeContentWithAI(
     content,
     openai,
@@ -141,22 +146,24 @@ export async function processFile(
   if (!suggestions) return null;
 
   const changes: TagChange[] = [];
-  const newTags = new Set(currentTags);
+  const newTags = new Set<string>();
 
   for (const suggestion of suggestions) {
-    if (currentTags.includes(suggestion.original)) {
-      newTags.delete(suggestion.original);
-      newTags.add(suggestion.suggested);
-      changes.push({
-        file: filePath,
-        oldTag: suggestion.original,
-        newTag: suggestion.suggested,
-      });
-    }
+    newTags.add(suggestion.suggested);
+    changes.push({
+      file: filePath,
+      oldTag: '',
+      newTag: suggestion.suggested,
+    });
   }
 
   if (changes.length > 0) {
-    const newContent = updateFrontMatter(content, Array.from(newTags));
+    // Preserve existing front matter and only add tags
+    const newFrontMatter = { ...frontMatter, tags: Array.from(newTags) };
+    const newContent = content.replace(
+      /^---\n([\s\S]*?)\n---/,
+      `---\n${yaml.dump(newFrontMatter)}---`
+    );
     await writeFile(filePath, newContent);
   }
 
