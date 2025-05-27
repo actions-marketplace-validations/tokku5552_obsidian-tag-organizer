@@ -327,11 +327,18 @@ async function main(): Promise<void> {
       changes.forEach((change) => {
         console.log(`${change.file}: ${change.oldTag} -> ${change.newTag}`);
       });
+      process.exit(0);
     } else {
-      console.log('\nNo tag changes were necessary.');
+      console.log('\nNo files needed tag updates. All files either:');
+      console.log('- Already have 5 or more tags');
+      console.log('- Have invalid front matter (and skip-invalid-frontmatter is true)');
+      console.log('- Are README files');
+      console.log('- Could not be processed due to other issues');
+      process.exit(0);
     }
-  } catch (error) {
-    console.error('Error:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error:', errorMessage);
     process.exit(1);
   }
 }
