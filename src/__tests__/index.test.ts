@@ -46,8 +46,8 @@ describe('processDirectory (ファイル制限)', () => {
       .fill(null)
       .map((_, i) => ({
         name: `test${i}.md`,
-        isFile: () => true,
-        isDirectory: () => false,
+        isFile: (): boolean => true,
+        isDirectory: (): boolean => false,
       }));
 
     mockReadDir.mockResolvedValue(mockFiles as any);
