@@ -39152,8 +39152,10 @@ async function processFile(filePath, openai, forbiddenTags, model, temperature, 
       console.log(`Skipping ${filePath} as it already has 5 or more tags`);
       return null;
     }
-    const uniqueSuggestions = suggestions.filter((suggestion, index, self2) => index === self2.findIndex((s) => s.suggested === suggestion.suggested)).filter((suggestion) => !newTags.has(suggestion.suggested)).slice(0, remainingSlots);
+    const uniqueSuggestions = Array.from(new Set(suggestions.map((s) => s.suggested))).map((suggested) => suggestions.find((s) => s.suggested === suggested)).filter((suggestion) => !newTags.has(suggestion.suggested)).slice(0, remainingSlots);
     for (const suggestion of uniqueSuggestions) {
+      if (newTags.size >= 5)
+        break;
       newTags.add(suggestion.suggested);
       changes.push({
         file: filePath,

@@ -218,15 +218,13 @@ export async function processFile(
     }
 
     // 提案されたタグから重複を除去し、既存タグとの重複も排除
-    const uniqueSuggestions = suggestions
-      .filter(
-        (suggestion, index, self) =>
-          index === self.findIndex((s) => s.suggested === suggestion.suggested)
-      )
+    const uniqueSuggestions = Array.from(new Set(suggestions.map((s) => s.suggested)))
+      .map((suggested) => suggestions.find((s) => s.suggested === suggested)!)
       .filter((suggestion) => !newTags.has(suggestion.suggested))
       .slice(0, remainingSlots);
 
     for (const suggestion of uniqueSuggestions) {
+      if (newTags.size >= 5) break;
       newTags.add(suggestion.suggested);
       changes.push({
         file: filePath,

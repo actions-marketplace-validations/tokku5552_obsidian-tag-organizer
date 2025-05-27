@@ -56,4 +56,60 @@ describe('processDirectory (ファイル制限)', () => {
         expect(mockWriteFile).toHaveBeenCalledTimes(5);
         expect(result.length).toBeLessThanOrEqual(5);
     });
+    it('should limit tags to 5 even if AI returns more than 5 suggestions', async () => {
+        // モックの設定
+        const mockReadDir = jest.spyOn(fs_1.promises, 'readdir');
+        const mockReadFile = jest.spyOn(fs_1.promises, 'readFile');
+        const mockWriteFile = jest.spyOn(fs_1.promises, 'writeFile');
+        // 1つのファイルをモック
+        const mockFiles = [
+            {
+                name: 'test.md',
+                isFile: () => true,
+                isDirectory: () => false,
+            },
+        ];
+        // @ts-expect-error: test mock for Dirent
+        mockReadDir.mockResolvedValue(mockFiles);
+        mockReadFile.mockResolvedValue('---\ntags: []\n---\ncontent');
+        mockWriteFile.mockResolvedValue(undefined);
+        // AIが6個のタグを返すようにモック
+        const mockOpenAIOver5 = {
+            chat: {
+                completions: {
+                    create: jest.fn().mockResolvedValue({
+                        choices: [
+                            {
+                                message: {
+                                    content: `tags:
+  - name: "tag1"
+    reason: "reason1"
+  - name: "tag2"
+    reason: "reason2"
+  - name: "tag3"
+    reason: "reason3"
+  - name: "tag4"
+    reason: "reason4"
+  - name: "tag5"
+    reason: "reason5"
+  - name: "tag6"
+    reason: "reason6"`,
+                                },
+                            },
+                        ],
+                    }),
+                },
+            },
+        };
+        const result = await (0, index_1.processDirectory)('/test/path', [], mockOpenAIOver5, [], 'gpt-3.5-turbo', 0.7, false);
+        // 書き込まれた内容のタグ数が5個であることを確認
+        const writtenContent = mockWriteFile.mock.calls[0][1];
+        const tagLines = writtenContent.match(/tags:\\n([\\s\\S]*?)\\n---/) ||
+            writtenContent.match(/tags:\n([\s\S]*?)\n---/);
+        const tags = tagLines
+            ? (tagLines[1].match(/- ".*?"/g) || []).map((s) => s.replace(/- "|"/g, ''))
+            : [];
+        expect(tags.length).toBe(5);
+        expect(result.length).toBe(5);
+    });
 });
