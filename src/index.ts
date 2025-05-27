@@ -208,8 +208,9 @@ export async function processFile(
     if (!suggestions) return null;
 
     const changes: TagChange[] = [];
-    // 既存のタグを保持しつつ、重複を除去して最大5つに制限
-    const newTags = new Set<string>(originalFrontMatter.tags || []);
+    // 既存のタグを一意にする
+    const uniqueOriginalTags = Array.from(new Set(originalFrontMatter.tags || []));
+    const newTags = new Set<string>(uniqueOriginalTags);
     const remainingSlots = 5 - newTags.size;
 
     if (remainingSlots <= 0) {
@@ -220,7 +221,7 @@ export async function processFile(
     // 提案されたタグから重複を除去し、既存タグとの重複も排除
     const uniqueSuggestions = Array.from(new Set(suggestions.map((s) => s.suggested)))
       .map((suggested) => suggestions.find((s) => s.suggested === suggested)!)
-      .filter((suggestion) => !newTags.has(suggestion.suggested))
+      .filter((suggestion) => !uniqueOriginalTags.includes(suggestion.suggested)) // 既存タグとの重複をチェック
       .slice(0, remainingSlots);
 
     for (const suggestion of uniqueSuggestions) {
