@@ -220,6 +220,10 @@ export async function processFile(
         quotingType: '"',
         forceQuotes: true,
         indent: 2,
+        styles: {
+          '!!null': 'empty',
+          '!!timestamp': 'canonical',
+        },
       });
 
       const newContent = content.replace(match[0], `---\n${newYaml}---`);
@@ -251,6 +255,7 @@ export async function processDirectory(
   const entries = await fs.readdir(dirPath, { withFileTypes: true });
   let processedFileCount = 0;
   const MAX_FILES = 5;
+  let reachedMaxFiles = false;
 
   for (const entry of entries) {
     const fullPath = path.join(dirPath, entry.name);
@@ -292,9 +297,13 @@ export async function processDirectory(
     }
 
     if (processedFileCount >= MAX_FILES) {
-      console.log(`Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
+      reachedMaxFiles = true;
       break;
     }
+  }
+
+  if (reachedMaxFiles) {
+    console.log(`\nReached maximum file limit (${MAX_FILES}). Stopping processing.`);
   }
 
   return changes;
@@ -311,7 +320,7 @@ async function main(): Promise<void> {
     console.log(`Target folder: ${inputs.targetFolder}`);
     console.log(`Exclude folders: ${inputs.excludeFolders.join(', ')}`);
     console.log(`Forbidden tags: ${inputs.forbiddenTags.join(', ')}`);
-    console.log(`Skip invalid front matter: ${inputs.skipInvalidFrontmatter}`);
+    console.log(`Skip invalid front matter: ${inputs.skipInvalidFrontmatter}\n`);
 
     const changes = await processDirectory(
       inputs.targetFolder,

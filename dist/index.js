@@ -39162,7 +39162,11 @@ async function processFile(filePath, openai, forbiddenTags, model, temperature, 
         sortKeys: false,
         quotingType: '"',
         forceQuotes: true,
-        indent: 2
+        indent: 2,
+        styles: {
+          "!!null": "empty",
+          "!!timestamp": "canonical"
+        }
       });
       const newContent = content.replace(match[0], `---
 ${newYaml}---`);
@@ -39183,6 +39187,7 @@ async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, 
   const entries = await fs_1.promises.readdir(dirPath, { withFileTypes: true });
   let processedFileCount = 0;
   const MAX_FILES = 5;
+  let reachedMaxFiles = false;
   for (const entry of entries) {
     const fullPath = path_1.default.join(dirPath, entry.name);
     if (entry.isDirectory()) {
@@ -39206,9 +39211,13 @@ async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, 
       }
     }
     if (processedFileCount >= MAX_FILES) {
-      console.log(`Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
+      reachedMaxFiles = true;
       break;
     }
+  }
+  if (reachedMaxFiles) {
+    console.log(`
+Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
   }
   return changes;
 }
@@ -39222,7 +39231,8 @@ async function main() {
     console.log(`Target folder: ${inputs.targetFolder}`);
     console.log(`Exclude folders: ${inputs.excludeFolders.join(", ")}`);
     console.log(`Forbidden tags: ${inputs.forbiddenTags.join(", ")}`);
-    console.log(`Skip invalid front matter: ${inputs.skipInvalidFrontmatter}`);
+    console.log(`Skip invalid front matter: ${inputs.skipInvalidFrontmatter}
+`);
     const changes = await processDirectory(inputs.targetFolder, inputs.excludeFolders, openai, inputs.forbiddenTags, inputs.model, inputs.temperature, inputs.skipInvalidFrontmatter);
     if (changes.length > 0) {
       console.log("\nTag changes made:");
