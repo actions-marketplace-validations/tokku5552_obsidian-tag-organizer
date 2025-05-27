@@ -207,11 +207,10 @@ export async function processFile(
 
     if (!suggestions) return null;
 
-    const changes: TagChange[] = [];
     // 既存のタグを一意にする
     const uniqueOriginalTags = Array.from(new Set(originalFrontMatter.tags || []));
-    const newTags = new Set<string>(uniqueOriginalTags);
-    const remainingSlots = 5 - newTags.size;
+
+    const remainingSlots = 5 - uniqueOriginalTags.length;
 
     if (remainingSlots <= 0) {
       console.log(`Skipping ${filePath} as it already has 5 or more tags`);
@@ -221,8 +220,18 @@ export async function processFile(
     // 提案されたタグから重複を除去し、既存タグとの重複も排除
     const uniqueSuggestions = Array.from(new Set(suggestions.map((s) => s.suggested)))
       .map((suggested) => suggestions.find((s) => s.suggested === suggested)!)
-      .filter((suggestion) => !uniqueOriginalTags.includes(suggestion.suggested)) // 既存タグとの重複をチェック
+      .filter((suggestion) => !uniqueOriginalTags.includes(suggestion.suggested))
       .slice(0, remainingSlots);
+
+    // 5つだけ取得してnewTagsに設定
+    const newTags = new Set<string>(uniqueSuggestions.slice(0, 5).map((s) => s.suggested));
+
+    // changesの生成をnewTagsを元にして行う
+    const changes: TagChange[] = Array.from(newTags).map((tag) => ({
+      file: filePath,
+      oldTag: '',
+      newTag: tag,
+    }));
 
     for (const suggestion of uniqueSuggestions) {
       if (newTags.size >= 5) break;

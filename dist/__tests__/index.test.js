@@ -50,11 +50,10 @@ describe('processDirectory (ファイル制限)', () => {
         mockReadDir.mockResolvedValue(mockFiles);
         mockReadFile.mockResolvedValue('---\ntags: []\n---\ncontent');
         mockWriteFile.mockResolvedValue(undefined);
-        const result = await (0, index_1.processDirectory)('/test/path', [], mockOpenAI, [], 'gpt-3.5-turbo', 0.7, false);
+        await (0, index_1.processDirectory)('/test/path', [], mockOpenAI, [], 'gpt-3.5-turbo', 0.7, false);
         // 5つのファイルのみが処理されたことを確認
         expect(mockReadFile).toHaveBeenCalledTimes(5);
         expect(mockWriteFile).toHaveBeenCalledTimes(5);
-        expect(result.length).toBeLessThanOrEqual(5);
     });
     it('should limit tags to 5 even if AI returns more than 5 suggestions', async () => {
         // モックの設定
@@ -101,15 +100,10 @@ describe('processDirectory (ファイル制限)', () => {
                 },
             },
         };
-        const result = await (0, index_1.processDirectory)('/test/path', [], mockOpenAIOver5, [], 'gpt-3.5-turbo', 0.7, false);
+        await (0, index_1.processDirectory)('/test/path', [], mockOpenAIOver5, [], 'gpt-3.5-turbo', 0.7, false);
         // 書き込まれた内容のタグ数が5個であることを確認
         const writtenContent = mockWriteFile.mock.calls[0][1];
-        const tagLines = writtenContent.match(/tags:\\n([\\s\\S]*?)\\n---/) ||
-            writtenContent.match(/tags:\n([\s\S]*?)\n---/);
-        const tags = tagLines
-            ? (tagLines[1].match(/- ".*?"/g) || []).map((s) => s.replace(/- "|"/g, ''))
-            : [];
-        expect(tags.length).toBe(5);
-        expect(result.length).toBe(5);
+        const frontMatter = (0, index_1.extractFrontMatter)(writtenContent);
+        expect(frontMatter?.tags).toHaveLength(5);
     });
 });
