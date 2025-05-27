@@ -72,7 +72,7 @@ Tag rules:
 Text:
 ${truncatedContent}
 
-Please return ONLY the tags in the following format (yaml):
+IMPORTANT: You must respond with ONLY a YAML object in the following format:
 tags:
   - name: "tag-name"
     reason: "reason for adding this tag"`;
@@ -84,7 +84,7 @@ tags:
         {
           role: 'system',
           content:
-            'You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text. Return ONLY the YAML format as specified.',
+            'You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text. You must respond with ONLY a YAML object in the specified format.',
         },
         {
           role: 'user',
@@ -97,7 +97,13 @@ tags:
     const result = response.choices[0].message.content;
     if (!result) return null;
 
-    const yamlContent = result.trim();
+    // Clean up the response to ensure it's valid YAML
+    const yamlContent = result
+      .trim()
+      .replace(/^```yaml\n?/, '') // Remove YAML code block if present
+      .replace(/```$/, '') // Remove closing code block if present
+      .trim();
+
     if (!yamlContent.startsWith('tags:')) {
       console.error('Invalid YAML format: missing tags: prefix');
       return null;
@@ -140,71 +146,96 @@ export async function processFile(
     return null;
   }
 
-  const frontMatter = extractFrontMatter(content);
-  if (!frontMatter) {
-    if (skipInvalidFrontmatter) {
-      console.log(`Skipping ${filePath} due to invalid front matter`);
+  try {
+    const frontMatter = extractFrontMatter(content);
+    if (!frontMatter) {
+      if (skipInvalidFrontmatter) {
+        console.log(`Skipping ${filePath} due to invalid front matter`);
+        return null;
+      }
+      throw new Error(`Invalid front matter in ${filePath}`);
+    }
+
+    const match = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!match) {
+      if (skipInvalidFrontmatter) {
+        console.log(`Skipping ${filePath} due to missing front matter delimiters`);
+        return null;
+      }
+      throw new Error(`Missing front matter delimiters in ${filePath}`);
+    }
+
+    let originalFrontMatter: FrontMatter;
+    try {
+      originalFrontMatter = yaml.load(match[1]) as FrontMatter;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (skipInvalidFrontmatter) {
+        console.log(`Skipping ${filePath} due to YAML parsing error: ${errorMessage}`);
+        return null;
+      }
+      throw new Error(`YAML parsing error in ${filePath}: ${errorMessage}`);
+    }
+
+    if (originalFrontMatter.tags && originalFrontMatter.tags.length >= 5) {
+      console.log(`Skipping ${filePath} as it already has 5 or more tags`);
       return null;
     }
-    throw new Error(`Invalid front matter in ${filePath}`);
-  }
 
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return null;
+    const suggestions = await analyzeContentWithAI(
+      content,
+      openai,
+      forbiddenTags,
+      model,
+      temperature
+    );
 
-  const originalFrontMatter = yaml.load(match[1]) as FrontMatter;
+    if (!suggestions) return null;
 
-  if (originalFrontMatter.tags && originalFrontMatter.tags.length >= 5) {
-    console.log(`Skipping ${filePath} as it already has 5 or more tags`);
-    return null;
-  }
+    const changes: TagChange[] = [];
+    const newTags = new Set<string>(originalFrontMatter.tags || []);
 
-  const suggestions = await analyzeContentWithAI(
-    content,
-    openai,
-    forbiddenTags,
-    model,
-    temperature
-  );
-
-  if (!suggestions) return null;
-
-  const changes: TagChange[] = [];
-  const newTags = new Set<string>(originalFrontMatter.tags || []);
-
-  for (const suggestion of suggestions) {
-    if (newTags.size >= 5) break;
-    if (!newTags.has(suggestion.suggested)) {
-      newTags.add(suggestion.suggested);
-      changes.push({
-        file: filePath,
-        oldTag: '',
-        newTag: suggestion.suggested,
-      });
+    for (const suggestion of suggestions) {
+      if (newTags.size >= 5) break;
+      if (!newTags.has(suggestion.suggested)) {
+        newTags.add(suggestion.suggested);
+        changes.push({
+          file: filePath,
+          oldTag: '',
+          newTag: suggestion.suggested,
+        });
+      }
     }
+
+    if (changes.length > 0) {
+      const newFrontMatter = {
+        ...originalFrontMatter,
+        tags: Array.from(newTags),
+      };
+
+      const newYaml = yaml.dump(newFrontMatter, {
+        lineWidth: -1,
+        noRefs: true,
+        sortKeys: false,
+        quotingType: '"',
+        forceQuotes: true,
+        indent: 2,
+      });
+
+      const newContent = content.replace(match[0], `---\n${newYaml}---`);
+
+      await writeFile(filePath, newContent);
+    }
+
+    return changes;
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    if (skipInvalidFrontmatter) {
+      console.log(`Skipping ${filePath} due to error: ${errorMessage}`);
+      return null;
+    }
+    throw error;
   }
-
-  if (changes.length > 0) {
-    const newFrontMatter = {
-      ...originalFrontMatter,
-      tags: Array.from(newTags),
-    };
-
-    const newYaml = yaml.dump(newFrontMatter, {
-      lineWidth: -1,
-      noRefs: true,
-      sortKeys: false,
-      quotingType: '"',
-      forceQuotes: true,
-      indent: 2,
-    });
-
-    const newContent = content.replace(match[0], `---\n${newYaml}---`);
-
-    await writeFile(filePath, newContent);
-  }
-
-  return changes;
 }
 
 export async function processDirectory(
