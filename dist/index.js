@@ -38915,7 +38915,7 @@ var require_config = __commonJS({
           return parsed;
         }
       } catch {
-        return input.split(",").filter(Boolean);
+        return [];
       }
       return [];
     }
@@ -39107,7 +39107,13 @@ async function processFile(filePath, openai, forbiddenTags, model, temperature) 
 async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, model, temperature) {
   const changes = [];
   const entries = await fs_1.promises.readdir(dirPath, { withFileTypes: true });
+  let processedFileCount = 0;
+  const MAX_FILES = 5;
   for (const entry of entries) {
+    if (processedFileCount >= MAX_FILES) {
+      console.log(`Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
+      break;
+    }
     const fullPath = path_1.default.join(dirPath, entry.name);
     if (entry.isDirectory()) {
       if (!excludeFolders.includes(entry.name)) {
@@ -39118,6 +39124,7 @@ async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, 
       const fileChanges = await processFile(fullPath, openai, forbiddenTags, model, temperature);
       if (fileChanges) {
         changes.push(...fileChanges);
+        processedFileCount++;
       }
     }
   }

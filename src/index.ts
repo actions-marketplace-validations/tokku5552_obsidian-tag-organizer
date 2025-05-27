@@ -166,8 +166,15 @@ export async function processDirectory(
 ): Promise<TagChange[]> {
   const changes: TagChange[] = [];
   const entries = await fs.readdir(dirPath, { withFileTypes: true });
+  let processedFileCount = 0;
+  const MAX_FILES = 5;
 
   for (const entry of entries) {
+    if (processedFileCount >= MAX_FILES) {
+      console.log(`Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
+      break;
+    }
+
     const fullPath = path.join(dirPath, entry.name);
 
     if (entry.isDirectory()) {
@@ -186,6 +193,7 @@ export async function processDirectory(
       const fileChanges = await processFile(fullPath, openai, forbiddenTags, model, temperature);
       if (fileChanges) {
         changes.push(...fileChanges);
+        processedFileCount++;
       }
     }
   }

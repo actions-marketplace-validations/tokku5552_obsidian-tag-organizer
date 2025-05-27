@@ -39,15 +39,13 @@ const yaml = __importStar(require("js-yaml"));
 const core = __importStar(require("@actions/core"));
 function parseYamlList(input) {
     try {
-        // Try to parse as YAML list
         const parsed = yaml.load(input);
         if (Array.isArray(parsed)) {
             return parsed;
         }
     }
     catch {
-        // If parsing fails, fall back to comma-separated string
-        return input.split(',').filter(Boolean);
+        return [];
     }
     return [];
 }
