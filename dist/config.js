@@ -38,25 +38,33 @@ exports.parseInputs = parseInputs;
 const yaml = __importStar(require("js-yaml"));
 const core = __importStar(require("@actions/core"));
 function parseYamlList(input) {
+    if (!input)
+        return [];
     try {
         const parsed = yaml.load(input);
-        if (Array.isArray(parsed)) {
-            return parsed;
-        }
+        return Array.isArray(parsed) ? parsed : [];
     }
-    catch {
+    catch (error) {
+        console.error('Error parsing YAML list:', error);
         return [];
     }
-    return [];
 }
 function parseInputs() {
+    const openaiApiKey = core.getInput('openai-api-key', { required: true });
+    const targetFolder = core.getInput('target-folder') || '.';
+    const excludeFolders = parseYamlList(core.getInput('exclude-folders'));
+    const forbiddenTags = parseYamlList(core.getInput('forbidden-tags'));
+    const model = core.getInput('model') || 'gpt-4';
+    const temperature = parseFloat(core.getInput('temperature') || '0.7');
+    const skipInvalidFrontmatter = core.getBooleanInput('skip-invalid-frontmatter') || false;
     const inputs = {
-        openaiApiKey: core.getInput('openai-api-key', { required: true }),
-        targetFolder: core.getInput('target-folder') || '.',
-        excludeFolders: parseYamlList(core.getInput('exclude-folders') || ''),
-        forbiddenTags: parseYamlList(core.getInput('forbidden-tags') || ''),
-        model: core.getInput('model') || 'gpt-4',
-        temperature: parseFloat(core.getInput('temperature') || '0.7'),
+        openaiApiKey,
+        targetFolder,
+        excludeFolders,
+        forbiddenTags,
+        model,
+        temperature,
+        skipInvalidFrontmatter,
     };
     validateInputs(inputs);
     return inputs;

@@ -21,8 +21,9 @@ describe('processDirectory (ファイル制限)', () => {
           choices: [
             {
               message: {
-                content:
-                  'suggestions:\n  - original: "test"\n    suggested: "new-test"\n    reason: "test reason"',
+                content: `tags:
+  - name: "new-tag"
+    reason: "test reason"`,
               },
             },
           ],
@@ -52,7 +53,7 @@ describe('processDirectory (ファイル制限)', () => {
 
     // @ts-expect-error: test mock for Dirent
     mockReadDir.mockResolvedValue(mockFiles);
-    mockReadFile.mockResolvedValue('---\ntags: [test]\n---\ncontent');
+    mockReadFile.mockResolvedValue('---\ntags: []\n---\ncontent');
     mockWriteFile.mockResolvedValue(undefined);
 
     const result = await processDirectory(

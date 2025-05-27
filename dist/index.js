@@ -38909,24 +38909,32 @@ var require_config = __commonJS({
     var yaml = __importStar(require_js_yaml());
     var core = __importStar(require_core3());
     function parseYamlList(input) {
+      if (!input)
+        return [];
       try {
         const parsed = yaml.load(input);
-        if (Array.isArray(parsed)) {
-          return parsed;
-        }
-      } catch {
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.error("Error parsing YAML list:", error);
         return [];
       }
-      return [];
     }
     function parseInputs() {
+      const openaiApiKey = core.getInput("openai-api-key", { required: true });
+      const targetFolder = core.getInput("target-folder") || ".";
+      const excludeFolders = parseYamlList(core.getInput("exclude-folders"));
+      const forbiddenTags = parseYamlList(core.getInput("forbidden-tags"));
+      const model = core.getInput("model") || "gpt-4";
+      const temperature = parseFloat(core.getInput("temperature") || "0.7");
+      const skipInvalidFrontmatter = core.getBooleanInput("skip-invalid-frontmatter") || false;
       const inputs = {
-        openaiApiKey: core.getInput("openai-api-key", { required: true }),
-        targetFolder: core.getInput("target-folder") || ".",
-        excludeFolders: parseYamlList(core.getInput("exclude-folders") || ""),
-        forbiddenTags: parseYamlList(core.getInput("forbidden-tags") || ""),
-        model: core.getInput("model") || "gpt-4",
-        temperature: parseFloat(core.getInput("temperature") || "0.7")
+        openaiApiKey,
+        targetFolder,
+        excludeFolders,
+        forbiddenTags,
+        model,
+        temperature,
+        skipInvalidFrontmatter
       };
       validateInputs(inputs);
       return inputs;
@@ -39022,24 +39030,25 @@ ${newFrontMatter}---`);
 }
 async function analyzeContentWithAI(content, openai, forbiddenTags, model, temperature) {
   const prompt = `
-Please analyze the following text and suggest tags.
+Please analyze the following text and suggest additional tags to reach a total of 5 tags.
+The text currently has the following tags: ${(extractFrontMatter(content)?.tags || []).join(", ")}
+
 Tag rules:
 - Use lowercase only
 - Use hyphens (-) instead of spaces between words
 - Use only content tags (no status or time tags)
 - Use singular form as default
 - Only use special characters: hyphen (-), underscore (_), and slash (/)
-- Suggest maximum 5 tags
+- Suggest enough tags to reach a total of 5 tags
 - The following tags are forbidden: ${forbiddenTags.join(", ")}
 
 Text:
 ${content}
 
-Please return tags in the following format (yaml):
-suggestions:
-  - original: "current-tag"
-    suggested: "new-tag"
-    reason: "reason for change"
+Please return the tags in the following format (yaml):
+tags:
+  - name: "tag-name"
+    reason: "reason for adding this tag"
 `;
   try {
     const response = await openai.chat.completions.create({
@@ -39047,7 +39056,7 @@ suggestions:
       messages: [
         {
           role: "system",
-          content: "You are a text analysis expert. Please suggest appropriate tags for the given text."
+          content: "You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text."
         },
         {
           role: "user",
@@ -39059,12 +39068,16 @@ suggestions:
     const result = response.choices[0].message.content;
     if (!result)
       return null;
-    const match = result.match(/suggestions:\n([\s\S]*?)(?:\n\n|$)/);
+    const match = result.match(/tags:\n([\s\S]*?)(?:\n\n|$)/);
     if (!match)
       return null;
     try {
       const parsed = js_yaml_1.default.load(match[0]);
-      return parsed.suggestions || [];
+      return parsed.tags.map((t) => ({
+        original: "",
+        suggested: t.name,
+        reason: t.reason
+      }));
     } catch (error) {
       console.error("Error parsing AI response:", error);
       return null;
@@ -39074,37 +39087,69 @@ suggestions:
     return null;
   }
 }
-async function processFile(filePath, openai, forbiddenTags, model, temperature) {
+async function processFile(filePath, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter) {
   const content = await readFile(filePath);
   if (!content)
     return null;
   const frontMatter = extractFrontMatter(content);
-  if (!frontMatter || !frontMatter.tags)
+  if (!frontMatter) {
+    if (skipInvalidFrontmatter) {
+      console.log(`Skipping ${filePath} due to invalid front matter`);
+      return null;
+    }
+    throw new Error(`Invalid front matter in ${filePath}`);
+  }
+  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!match)
     return null;
-  const currentTags = frontMatter.tags;
+  const originalFrontMatter = js_yaml_1.default.load(match[1]);
+  if (originalFrontMatter.tags && originalFrontMatter.tags.length >= 5) {
+    console.log(`Skipping ${filePath} as it already has 5 or more tags`);
+    return null;
+  }
   const suggestions = await analyzeContentWithAI(content, openai, forbiddenTags, model, temperature);
   if (!suggestions)
     return null;
   const changes = [];
-  const newTags = new Set(currentTags);
+  const newTags = new Set(originalFrontMatter.tags || []);
   for (const suggestion of suggestions) {
-    if (currentTags.includes(suggestion.original)) {
-      newTags.delete(suggestion.original);
+    if (newTags.size >= 5)
+      break;
+    if (!newTags.has(suggestion.suggested)) {
       newTags.add(suggestion.suggested);
       changes.push({
         file: filePath,
-        oldTag: suggestion.original,
+        oldTag: "",
         newTag: suggestion.suggested
       });
     }
   }
   if (changes.length > 0) {
-    const newContent = updateFrontMatter(content, Array.from(newTags));
+    const newFrontMatter = {
+      ...originalFrontMatter,
+      tags: Array.from(newTags)
+    };
+    const newYaml = js_yaml_1.default.dump(newFrontMatter, {
+      lineWidth: -1,
+      // Prevent line wrapping
+      noRefs: true,
+      // Prevent anchor/alias references
+      sortKeys: false,
+      // Maintain original key order
+      quotingType: '"',
+      // Use double quotes for strings
+      forceQuotes: true,
+      // Force quotes for all strings
+      indent: 2
+      // Use 2 spaces for indentation
+    });
+    const newContent = content.replace(match[0], `---
+${newYaml}---`);
     await writeFile(filePath, newContent);
   }
   return changes;
 }
-async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, model, temperature) {
+async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter) {
   const changes = [];
   const entries = await fs_1.promises.readdir(dirPath, { withFileTypes: true });
   let processedFileCount = 0;
@@ -39117,14 +39162,21 @@ async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, 
     const fullPath = path_1.default.join(dirPath, entry.name);
     if (entry.isDirectory()) {
       if (!excludeFolders.includes(entry.name)) {
-        const subChanges = await processDirectory(fullPath, excludeFolders, openai, forbiddenTags, model, temperature);
+        const subChanges = await processDirectory(fullPath, excludeFolders, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter);
         changes.push(...subChanges);
       }
     } else if (entry.isFile() && entry.name.endsWith(".md")) {
-      const fileChanges = await processFile(fullPath, openai, forbiddenTags, model, temperature);
-      if (fileChanges) {
-        changes.push(...fileChanges);
-        processedFileCount++;
+      try {
+        const fileChanges = await processFile(fullPath, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter);
+        if (fileChanges) {
+          changes.push(...fileChanges);
+          processedFileCount++;
+        }
+      } catch (error) {
+        if (!skipInvalidFrontmatter) {
+          throw error;
+        }
+        console.error(`Error processing ${fullPath}:`, error);
       }
     }
   }
@@ -39140,7 +39192,8 @@ async function main() {
     console.log(`Target folder: ${inputs.targetFolder}`);
     console.log(`Exclude folders: ${inputs.excludeFolders.join(", ")}`);
     console.log(`Forbidden tags: ${inputs.forbiddenTags.join(", ")}`);
-    const changes = await processDirectory(inputs.targetFolder, inputs.excludeFolders, openai, inputs.forbiddenTags, inputs.model, inputs.temperature);
+    console.log(`Skip invalid front matter: ${inputs.skipInvalidFrontmatter}`);
+    const changes = await processDirectory(inputs.targetFolder, inputs.excludeFolders, openai, inputs.forbiddenTags, inputs.model, inputs.temperature, inputs.skipInvalidFrontmatter);
     if (changes.length > 0) {
       console.log("\nTag changes made:");
       changes.forEach((change) => {

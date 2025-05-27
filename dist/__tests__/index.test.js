@@ -20,7 +20,9 @@ describe('processDirectory (ファイル制限)', () => {
                     choices: [
                         {
                             message: {
-                                content: 'suggestions:\n  - original: "test"\n    suggested: "new-test"\n    reason: "test reason"',
+                                content: `tags:
+  - name: "new-tag"
+    reason: "test reason"`,
                             },
                         },
                     ],
@@ -44,10 +46,11 @@ describe('processDirectory (ファイル制限)', () => {
             isFile: () => true,
             isDirectory: () => false,
         }));
+        // @ts-expect-error: test mock for Dirent
         mockReadDir.mockResolvedValue(mockFiles);
-        mockReadFile.mockResolvedValue('---\ntags: [test]\n---\ncontent');
+        mockReadFile.mockResolvedValue('---\ntags: []\n---\ncontent');
         mockWriteFile.mockResolvedValue(undefined);
-        const result = await (0, index_1.processDirectory)('/test/path', [], mockOpenAI, [], 'gpt-3.5-turbo', 0.7);
+        const result = await (0, index_1.processDirectory)('/test/path', [], mockOpenAI, [], 'gpt-3.5-turbo', 0.7, false);
         // 5つのファイルのみが処理されたことを確認
         expect(mockReadFile).toHaveBeenCalledTimes(5);
         expect(mockWriteFile).toHaveBeenCalledTimes(5);

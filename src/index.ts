@@ -53,8 +53,8 @@ export async function analyzeContentWithAI(
   temperature: number
 ): Promise<TagSuggestion[] | null> {
   const prompt = `
-Please analyze the following text and add appropriate tags to the front matter.
-The text currently has no tags, and we need to add them.
+Please analyze the following text and suggest additional tags to reach a total of 5 tags.
+The text currently has the following tags: ${(extractFrontMatter(content)?.tags || []).join(', ')}
 
 Tag rules:
 - Use lowercase only
@@ -62,7 +62,7 @@ Tag rules:
 - Use only content tags (no status or time tags)
 - Use singular form as default
 - Only use special characters: hyphen (-), underscore (_), and slash (/)
-- Add maximum 5 tags
+- Suggest enough tags to reach a total of 5 tags
 - The following tags are forbidden: ${forbiddenTags.join(', ')}
 
 Text:
@@ -81,7 +81,7 @@ tags:
         {
           role: 'system',
           content:
-            'You are a text analysis expert. Your task is to add appropriate tags to the front matter of the given text.',
+            'You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text.',
         },
         {
           role: 'user',
@@ -134,9 +134,16 @@ export async function processFile(
     throw new Error(`Invalid front matter in ${filePath}`);
   }
 
-  // Skip if tags already exist
-  if (frontMatter.tags && frontMatter.tags.length > 0) {
-    console.log(`Skipping ${filePath} as it already has tags`);
+  // Get the original front matter content
+  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return null;
+
+  // Parse the original front matter
+  const originalFrontMatter = yaml.load(match[1]) as FrontMatter;
+
+  // Skip if tags already exist and have 5 or more tags
+  if (originalFrontMatter.tags && originalFrontMatter.tags.length >= 5) {
+    console.log(`Skipping ${filePath} as it already has 5 or more tags`);
     return null;
   }
 
@@ -151,26 +158,22 @@ export async function processFile(
   if (!suggestions) return null;
 
   const changes: TagChange[] = [];
-  const newTags = new Set<string>();
+  const newTags = new Set<string>(originalFrontMatter.tags || []);
 
   for (const suggestion of suggestions) {
-    newTags.add(suggestion.suggested);
-    changes.push({
-      file: filePath,
-      oldTag: '',
-      newTag: suggestion.suggested,
-    });
+    if (newTags.size >= 5) break; // Stop if we already have 5 tags
+    if (!newTags.has(suggestion.suggested)) {
+      newTags.add(suggestion.suggested);
+      changes.push({
+        file: filePath,
+        oldTag: '',
+        newTag: suggestion.suggested,
+      });
+    }
   }
 
   if (changes.length > 0) {
-    // Get the original front matter content
-    const match = content.match(/^---\n([\s\S]*?)\n---/);
-    if (!match) return null;
-
-    // Parse the original front matter
-    const originalFrontMatter = yaml.load(match[1]) as FrontMatter;
-
-    // Create new front matter with only the tags added
+    // Create new front matter with updated tags
     const newFrontMatter = {
       ...originalFrontMatter,
       tags: Array.from(newTags),
@@ -181,6 +184,9 @@ export async function processFile(
       lineWidth: -1, // Prevent line wrapping
       noRefs: true, // Prevent anchor/alias references
       sortKeys: false, // Maintain original key order
+      quotingType: '"', // Use double quotes for strings
+      forceQuotes: true, // Force quotes for all strings
+      indent: 2, // Use 2 spaces for indentation
     });
 
     // Create the new content with updated front matter
