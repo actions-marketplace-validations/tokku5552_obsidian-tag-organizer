@@ -210,23 +210,29 @@ export async function processFile(
     const changes: TagChange[] = [];
     // 既存のタグを保持しつつ、重複を除去して最大5つに制限
     const newTags = new Set<string>(originalFrontMatter.tags || []);
+    const remainingSlots = 5 - newTags.size;
 
-    // 提案されたタグから重複を除去
-    const uniqueSuggestions = suggestions.filter(
-      (suggestion, index, self) =>
-        index === self.findIndex((s) => s.suggested === suggestion.suggested)
-    );
+    if (remainingSlots <= 0) {
+      console.log(`Skipping ${filePath} as it already has 5 or more tags`);
+      return null;
+    }
+
+    // 提案されたタグから重複を除去し、既存タグとの重複も排除
+    const uniqueSuggestions = suggestions
+      .filter(
+        (suggestion, index, self) =>
+          index === self.findIndex((s) => s.suggested === suggestion.suggested)
+      )
+      .filter((suggestion) => !newTags.has(suggestion.suggested))
+      .slice(0, remainingSlots);
 
     for (const suggestion of uniqueSuggestions) {
-      if (newTags.size >= 5) break;
-      if (!newTags.has(suggestion.suggested)) {
-        newTags.add(suggestion.suggested);
-        changes.push({
-          file: filePath,
-          oldTag: '',
-          newTag: suggestion.suggested,
-        });
-      }
+      newTags.add(suggestion.suggested);
+      changes.push({
+        file: filePath,
+        oldTag: '',
+        newTag: suggestion.suggested,
+      });
     }
 
     if (changes.length > 0) {
