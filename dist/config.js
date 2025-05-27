@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEFAULT_CONFIG = void 0;
 exports.parseInputs = parseInputs;
 const yaml = __importStar(require("js-yaml"));
+const core = __importStar(require("@actions/core"));
 function parseYamlList(input) {
     try {
         // Try to parse as YAML list
@@ -52,12 +53,12 @@ function parseYamlList(input) {
 }
 function parseInputs() {
     const inputs = {
-        openaiApiKey: process.env.INPUT_OPENAI_API_KEY || '',
-        targetFolder: process.env.INPUT_TARGET_FOLDER || '.',
-        excludeFolders: parseYamlList(process.env.INPUT_EXCLUDE_FOLDERS || ''),
-        forbiddenTags: parseYamlList(process.env.INPUT_FORBIDDEN_TAGS || ''),
-        model: process.env.INPUT_MODEL || 'gpt-4',
-        temperature: parseFloat(process.env.INPUT_TEMPERATURE || '0.7'),
+        openaiApiKey: core.getInput('openai-api-key', { required: true }),
+        targetFolder: core.getInput('target-folder') || '.',
+        excludeFolders: parseYamlList(core.getInput('exclude-folders') || ''),
+        forbiddenTags: parseYamlList(core.getInput('forbidden-tags') || ''),
+        model: core.getInput('model') || 'gpt-4',
+        temperature: parseFloat(core.getInput('temperature') || '0.7'),
     };
     validateInputs(inputs);
     return inputs;

@@ -1,5 +1,6 @@
 import { ActionInputs } from './types';
 import * as yaml from 'js-yaml';
+import * as core from '@actions/core';
 
 function parseYamlList(input: string): string[] {
   try {
@@ -17,12 +18,12 @@ function parseYamlList(input: string): string[] {
 
 export function parseInputs(): ActionInputs {
   const inputs: ActionInputs = {
-    openaiApiKey: process.env.INPUT_OPENAI_API_KEY || '',
-    targetFolder: process.env.INPUT_TARGET_FOLDER || '.',
-    excludeFolders: parseYamlList(process.env.INPUT_EXCLUDE_FOLDERS || ''),
-    forbiddenTags: parseYamlList(process.env.INPUT_FORBIDDEN_TAGS || ''),
-    model: process.env.INPUT_MODEL || 'gpt-4',
-    temperature: parseFloat(process.env.INPUT_TEMPERATURE || '0.7'),
+    openaiApiKey: core.getInput('openai-api-key', { required: true }),
+    targetFolder: core.getInput('target-folder') || '.',
+    excludeFolders: parseYamlList(core.getInput('exclude-folders') || ''),
+    forbiddenTags: parseYamlList(core.getInput('forbidden-tags') || ''),
+    model: core.getInput('model') || 'gpt-4',
+    temperature: parseFloat(core.getInput('temperature') || '0.7'),
   };
 
   validateInputs(inputs);
