@@ -53,24 +53,25 @@ export async function analyzeContentWithAI(
   temperature: number
 ): Promise<TagSuggestion[] | null> {
   const prompt = `
-Please analyze the following text and suggest tags.
+Please analyze the following text and add appropriate tags to the front matter.
+The text currently has no tags, and we need to add them.
+
 Tag rules:
 - Use lowercase only
 - Use hyphens (-) instead of spaces between words
 - Use only content tags (no status or time tags)
 - Use singular form as default
 - Only use special characters: hyphen (-), underscore (_), and slash (/)
-- Suggest maximum 5 tags
+- Add maximum 5 tags
 - The following tags are forbidden: ${forbiddenTags.join(', ')}
 
 Text:
 ${content}
 
-Please return tags in the following format (yaml):
-suggestions:
-  - original: "current-tag"
-    suggested: "new-tag"
-    reason: "reason for change"
+Please return the tags in the following format (yaml):
+tags:
+  - name: "tag-name"
+    reason: "reason for adding this tag"
 `;
 
   try {
@@ -80,7 +81,7 @@ suggestions:
         {
           role: 'system',
           content:
-            'You are a text analysis expert. Please suggest appropriate tags for the given text.',
+            'You are a text analysis expert. Your task is to add appropriate tags to the front matter of the given text.',
         },
         {
           role: 'user',
@@ -93,12 +94,16 @@ suggestions:
     const result = response.choices[0].message.content;
     if (!result) return null;
 
-    const match = result.match(/suggestions:\n([\s\S]*?)(?:\n\n|$)/);
+    const match = result.match(/tags:\n([\s\S]*?)(?:\n\n|$)/);
     if (!match) return null;
 
     try {
-      const parsed = yaml.load(match[0]) as { suggestions: TagSuggestion[] };
-      return parsed.suggestions || [];
+      const parsed = yaml.load(match[0]) as { tags: { name: string; reason: string }[] };
+      return parsed.tags.map((t) => ({
+        original: '',
+        suggested: t.name,
+        reason: t.reason,
+      }));
     } catch (error) {
       console.error('Error parsing AI response:', error);
       return null;
@@ -158,12 +163,29 @@ export async function processFile(
   }
 
   if (changes.length > 0) {
-    // Preserve existing front matter and only add tags
-    const newFrontMatter = { ...frontMatter, tags: Array.from(newTags) };
-    const newContent = content.replace(
-      /^---\n([\s\S]*?)\n---/,
-      `---\n${yaml.dump(newFrontMatter)}---`
-    );
+    // Get the original front matter content
+    const match = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!match) return null;
+
+    // Parse the original front matter
+    const originalFrontMatter = yaml.load(match[1]) as FrontMatter;
+
+    // Create new front matter with only the tags added
+    const newFrontMatter = {
+      ...originalFrontMatter,
+      tags: Array.from(newTags),
+    };
+
+    // Convert to YAML with specific options to maintain format
+    const newYaml = yaml.dump(newFrontMatter, {
+      lineWidth: -1, // Prevent line wrapping
+      noRefs: true, // Prevent anchor/alias references
+      sortKeys: false, // Maintain original key order
+    });
+
+    // Create the new content with updated front matter
+    const newContent = content.replace(match[0], `---\n${newYaml}---`);
+
     await writeFile(filePath, newContent);
   }
 
