@@ -39155,8 +39155,9 @@ async function processFile(filePath, openai, forbiddenTags, model, temperature, 
       const originalFrontMatterStr = match[1];
       const updatedFrontMatterStr = originalFrontMatterStr.replace(/^tags:.*$/m, `tags:
 ${Array.from(newTags).map((tag) => `  - "${tag}"`).join("\n")}`);
-      const newContent = content.replace(match[0], `---
-${updatedFrontMatterStr}---`);
+      const newContent = content.replace(/^---\n([\s\S]*?)\n---/m, `---
+${updatedFrontMatterStr}
+---`);
       await writeFile(filePath, newContent);
     }
     return changes;

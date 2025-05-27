@@ -219,7 +219,11 @@ export async function processFile(
           .join('\n')}`
       );
 
-      const newContent = content.replace(match[0], `---\n${updatedFrontMatterStr}---`);
+      // 元の改行を保持して置換
+      const newContent = content.replace(
+        /^---\n([\s\S]*?)\n---/m,
+        `---\n${updatedFrontMatterStr}\n---`
+      );
 
       await writeFile(filePath, newContent);
     }
