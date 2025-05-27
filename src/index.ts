@@ -193,6 +193,7 @@ export async function processFile(
     if (!suggestions) return null;
 
     const changes: TagChange[] = [];
+    // 既存のタグを保持しつつ、重複を除去して最大5つに制限
     const newTags = new Set<string>(originalFrontMatter.tags || []);
 
     for (const suggestion of suggestions) {
@@ -211,13 +212,12 @@ export async function processFile(
       // 元のフロントマターを文字列として保持
       const originalFrontMatterStr = match[1];
 
-      // 重複を除去して最大5つのタグを保持
-      const uniqueTags = Array.from(new Set(Array.from(newTags))).slice(0, 5);
-
-      // タグのみを更新
+      // タグのみを更新（重複は既に除去済み）
       const updatedFrontMatterStr = originalFrontMatterStr.replace(
         /^tags:.*$/m,
-        `tags:\n${uniqueTags.map((tag) => `  - "${tag}"`).join('\n')}`
+        `tags:\n${Array.from(newTags)
+          .map((tag) => `  - "${tag}"`)
+          .join('\n')}`
       );
 
       // 元の改行を保持して置換
