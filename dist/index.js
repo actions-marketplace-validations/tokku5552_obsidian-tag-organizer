@@ -7377,12 +7377,12 @@ var require_isFunction2 = __commonJS({
 var require_isFileLike = __commonJS({
   "node_modules/form-data-encoder/lib/cjs/util/isFileLike.js"(exports2) {
     "use strict";
-    var __importDefault2 = exports2 && exports2.__importDefault || function(mod) {
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.isFileLike = void 0;
-    var isFunction_1 = __importDefault2(require_isFunction2());
+    var isFunction_1 = __importDefault(require_isFunction2());
     var isFileLike = (value) => Boolean(value && typeof value === "object" && (0, isFunction_1.default)(value.constructor) && value[Symbol.toStringTag] === "File" && (0, isFunction_1.default)(value.stream) && value.name != null && value.size != null && value.lastModified != null);
     exports2.isFileLike = isFileLike;
   }
@@ -7392,12 +7392,12 @@ var require_isFileLike = __commonJS({
 var require_isFormData = __commonJS({
   "node_modules/form-data-encoder/lib/cjs/util/isFormData.js"(exports2) {
     "use strict";
-    var __importDefault2 = exports2 && exports2.__importDefault || function(mod) {
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.isFormDataLike = exports2.isFormData = void 0;
-    var isFunction_1 = __importDefault2(require_isFunction2());
+    var isFunction_1 = __importDefault(require_isFunction2());
     var isFormData = (value) => Boolean(value && (0, isFunction_1.default)(value.constructor) && value[Symbol.toStringTag] === "FormData" && (0, isFunction_1.default)(value.append) && (0, isFunction_1.default)(value.getAll) && (0, isFunction_1.default)(value.entries) && (0, isFunction_1.default)(value[Symbol.iterator]));
     exports2.isFormData = isFormData;
     exports2.isFormDataLike = exports2.isFormData;
@@ -7424,7 +7424,7 @@ var require_FormDataEncoder = __commonJS({
         throw new TypeError("Cannot read private member from an object whose class did not declare it");
       return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
     };
-    var __importDefault2 = exports2 && exports2.__importDefault || function(mod) {
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
     };
     var _FormDataEncoder_instances;
@@ -7439,10 +7439,10 @@ var require_FormDataEncoder = __commonJS({
     var _FormDataEncoder_getFieldHeader;
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.Encoder = exports2.FormDataEncoder = void 0;
-    var createBoundary_1 = __importDefault2(require_createBoundary());
-    var isPlainObject_1 = __importDefault2(require_isPlainObject());
-    var normalizeValue_1 = __importDefault2(require_normalizeValue());
-    var escapeName_1 = __importDefault2(require_escapeName());
+    var createBoundary_1 = __importDefault(require_createBoundary());
+    var isPlainObject_1 = __importDefault(require_isPlainObject());
+    var normalizeValue_1 = __importDefault(require_normalizeValue());
+    var escapeName_1 = __importDefault(require_escapeName());
     var isFileLike_1 = require_isFileLike();
     var isFormData_1 = require_isFormData();
     var defaultOptions = {
@@ -7683,18 +7683,18 @@ var require_fileFromPath = __commonJS({
         throw new TypeError("Cannot read private member from an object whose class did not declare it");
       return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
     };
-    var __importDefault2 = exports2 && exports2.__importDefault || function(mod) {
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
     };
     var _FileFromPath_path;
     var _FileFromPath_start;
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.fileFromPath = exports2.fileFromPathSync = void 0;
-    var fs_12 = require("fs");
-    var path_12 = require("path");
-    var node_domexception_1 = __importDefault2(require_node_domexception());
+    var fs_1 = require("fs");
+    var path_1 = require("path");
+    var node_domexception_1 = __importDefault(require_node_domexception());
     var File_1 = require_File();
-    var isPlainObject_1 = __importDefault2(require_isPlainObject2());
+    var isPlainObject_1 = __importDefault(require_isPlainObject2());
     __exportStar(require_isFile(), exports2);
     var MESSAGE = "The requested file could not be read, typically due to permission problems that have occurred after a reference to a file was acquired.";
     var FileFromPath = class _FileFromPath {
@@ -7703,7 +7703,7 @@ var require_fileFromPath = __commonJS({
         _FileFromPath_start.set(this, void 0);
         __classPrivateFieldSet(this, _FileFromPath_path, input.path, "f");
         __classPrivateFieldSet(this, _FileFromPath_start, input.start || 0, "f");
-        this.name = (0, path_12.basename)(__classPrivateFieldGet(this, _FileFromPath_path, "f"));
+        this.name = (0, path_1.basename)(__classPrivateFieldGet(this, _FileFromPath_path, "f"));
         this.size = input.size;
         this.lastModified = input.lastModified;
       }
@@ -7716,12 +7716,12 @@ var require_fileFromPath = __commonJS({
         });
       }
       async *stream() {
-        const { mtimeMs } = await fs_12.promises.stat(__classPrivateFieldGet(this, _FileFromPath_path, "f"));
+        const { mtimeMs } = await fs_1.promises.stat(__classPrivateFieldGet(this, _FileFromPath_path, "f"));
         if (mtimeMs > this.lastModified) {
           throw new node_domexception_1.default(MESSAGE, "NotReadableError");
         }
         if (this.size) {
-          yield* (0, fs_12.createReadStream)(__classPrivateFieldGet(this, _FileFromPath_path, "f"), {
+          yield* (0, fs_1.createReadStream)(__classPrivateFieldGet(this, _FileFromPath_path, "f"), {
             start: __classPrivateFieldGet(this, _FileFromPath_start, "f"),
             end: __classPrivateFieldGet(this, _FileFromPath_start, "f") + this.size - 1
           });
@@ -7748,12 +7748,12 @@ var require_fileFromPath = __commonJS({
       });
     }
     function fileFromPathSync(path, filenameOrOptions, options = {}) {
-      const stats = (0, fs_12.statSync)(path);
+      const stats = (0, fs_1.statSync)(path);
       return createFileFromPath(path, stats, filenameOrOptions, options);
     }
     exports2.fileFromPathSync = fileFromPathSync;
     async function fileFromPath(path, filenameOrOptions, options) {
-      const stats = await fs_12.promises.stat(path);
+      const stats = await fs_1.promises.stat(path);
       return createFileFromPath(path, stats, filenameOrOptions, options);
     }
     exports2.fileFromPath = fileFromPath;
@@ -7796,14 +7796,14 @@ var require_node_runtime = __commonJS({
       __setModuleDefault(result, mod);
       return result;
     };
-    var __importDefault2 = exports2 && exports2.__importDefault || function(mod) {
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.getRuntime = void 0;
     var nf = __importStar(require_lib2());
     var fd = __importStar(require_cjs());
-    var agentkeepalive_1 = __importDefault2(require_agentkeepalive());
+    var agentkeepalive_1 = __importDefault(require_agentkeepalive());
     var abort_controller_1 = require_abort_controller();
     var node_fs_1 = require("node:fs");
     var form_data_encoder_1 = require_cjs2();
@@ -37151,8 +37151,8 @@ var require_summary = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.summary = exports2.markdownSummary = exports2.SUMMARY_DOCS_URL = exports2.SUMMARY_ENV_VAR = void 0;
     var os_1 = require("os");
-    var fs_12 = require("fs");
-    var { access, appendFile, writeFile: writeFile2 } = fs_12.promises;
+    var fs_1 = require("fs");
+    var { access, appendFile, writeFile } = fs_1.promises;
     exports2.SUMMARY_ENV_VAR = "GITHUB_STEP_SUMMARY";
     exports2.SUMMARY_DOCS_URL = "https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary";
     var Summary = class {
@@ -37175,7 +37175,7 @@ var require_summary = __commonJS({
             throw new Error(`Unable to find environment variable for $${exports2.SUMMARY_ENV_VAR}. Check if your runtime environment supports job summaries.`);
           }
           try {
-            yield access(pathFromEnv, fs_12.constants.R_OK | fs_12.constants.W_OK);
+            yield access(pathFromEnv, fs_1.constants.R_OK | fs_1.constants.W_OK);
           } catch (_a) {
             throw new Error(`Unable to access summary file: '${pathFromEnv}'. Check if the file has correct read/write permissions.`);
           }
@@ -37210,7 +37210,7 @@ var require_summary = __commonJS({
         return __awaiter(this, void 0, void 0, function* () {
           const overwrite = !!(options === null || options === void 0 ? void 0 : options.overwrite);
           const filePath = yield this.filePath();
-          const writeFunc = overwrite ? writeFile2 : appendFile;
+          const writeFunc = overwrite ? writeFile : appendFile;
           yield writeFunc(filePath, this._buffer, { encoding: "utf8" });
           return this.emptyBuffer();
         });
@@ -38560,12 +38560,12 @@ var require_platform = __commonJS({
         step((generator = generator.apply(thisArg, _arguments || [])).next());
       });
     };
-    var __importDefault2 = exports2 && exports2.__importDefault || function(mod) {
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.getDetails = exports2.isLinux = exports2.isMacOS = exports2.isWindows = exports2.arch = exports2.platform = void 0;
-    var os_1 = __importDefault2(require("os"));
+    var os_1 = __importDefault(require("os"));
     var exec = __importStar(require_exec());
     var getWindowsInfo = () => __awaiter(void 0, void 0, void 0, function* () {
       const { stdout: version } = yield exec.getExecOutput('powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Version"', void 0, {
@@ -38975,70 +38975,101 @@ var require_config = __commonJS({
   }
 });
 
-// dist/index.js
-var __importDefault = exports && exports.__importDefault || function(mod) {
-  return mod && mod.__esModule ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.readFile = readFile;
-exports.writeFile = writeFile;
-exports.extractFrontMatter = extractFrontMatter;
-exports.updateFrontMatter = updateFrontMatter;
-exports.analyzeContentWithAI = analyzeContentWithAI;
-exports.processFile = processFile;
-exports.processDirectory = processDirectory;
-var fs_1 = require("fs");
-var path_1 = __importDefault(require("path"));
-var openai_1 = require_openai();
-var js_yaml_1 = __importDefault(require_js_yaml());
-var config_1 = require_config();
-async function readFile(filePath) {
-  try {
-    return await fs_1.promises.readFile(filePath, "utf8");
-  } catch (error) {
-    console.error(`Error reading ${filePath}:`, error);
-    return null;
+// dist/services/fileService.js
+var require_fileService = __commonJS({
+  "dist/services/fileService.js"(exports2) {
+    "use strict";
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
+      return mod && mod.__esModule ? mod : { "default": mod };
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.readFile = readFile;
+    exports2.writeFile = writeFile;
+    exports2.readDirectory = readDirectory;
+    exports2.joinPath = joinPath;
+    var fs_1 = require("fs");
+    var path_1 = __importDefault(require("path"));
+    async function readFile(filePath) {
+      try {
+        return await fs_1.promises.readFile(filePath, "utf8");
+      } catch (error) {
+        console.error(`Error reading ${filePath}:`, error);
+        return null;
+      }
+    }
+    async function writeFile(filePath, content) {
+      try {
+        await fs_1.promises.writeFile(filePath, content, "utf8");
+      } catch (error) {
+        console.error(`Error writing ${filePath}:`, error);
+      }
+    }
+    async function readDirectory(dirPath) {
+      return await fs_1.promises.readdir(dirPath, { withFileTypes: true });
+    }
+    function joinPath(...paths) {
+      return path_1.default.join(...paths);
+    }
   }
-}
-async function writeFile(filePath, content) {
-  try {
-    await fs_1.promises.writeFile(filePath, content, "utf8");
-  } catch (error) {
-    console.error(`Error writing ${filePath}:`, error);
-  }
-}
-function extractFrontMatter(content) {
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!match)
-    return null;
-  try {
-    return js_yaml_1.default.load(match[1]);
-  } catch (error) {
-    console.error("Error parsing front matter:", error);
-    return null;
-  }
-}
-function updateFrontMatter(content, newTags) {
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!match)
-    return content;
-  const frontMatter = js_yaml_1.default.load(match[1]);
-  frontMatter.tags = newTags;
-  const newFrontMatter = js_yaml_1.default.dump(frontMatter);
-  return content.replace(match[0], `---
+});
+
+// dist/services/frontMatterService.js
+var require_frontMatterService = __commonJS({
+  "dist/services/frontMatterService.js"(exports2) {
+    "use strict";
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
+      return mod && mod.__esModule ? mod : { "default": mod };
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.extractFrontMatter = extractFrontMatter;
+    exports2.updateFrontMatter = updateFrontMatter;
+    var js_yaml_1 = __importDefault(require_js_yaml());
+    function extractFrontMatter(content) {
+      const match = content.match(/^---\n([\s\S]*?)\n---/);
+      if (!match)
+        return null;
+      try {
+        return js_yaml_1.default.load(match[1]);
+      } catch (error) {
+        console.error("Error parsing front matter:", error);
+        return null;
+      }
+    }
+    function updateFrontMatter(content, newTags) {
+      const match = content.match(/^---\n([\s\S]*?)\n---/);
+      if (!match)
+        return content;
+      const frontMatter = js_yaml_1.default.load(match[1]);
+      frontMatter.tags = newTags;
+      const newFrontMatter = js_yaml_1.default.dump(frontMatter);
+      return content.replace(match[0], `---
 ${newFrontMatter}---`);
-}
-async function analyzeContentWithAI(content, openai, forbiddenTags, model, temperature) {
-  const maxContentLength = 4e3;
-  const truncatedContent = content.length > maxContentLength ? content.substring(0, maxContentLength) + "..." : content;
-  const frontMatter = extractFrontMatter(content);
-  const existingTags = frontMatter?.tags || [];
-  const remainingSlots = 5 - existingTags.length;
-  if (remainingSlots <= 0) {
-    console.log("File already has 5 or more tags, skipping AI analysis");
-    return null;
+    }
   }
-  const prompt = `
+});
+
+// dist/services/aiService.js
+var require_aiService = __commonJS({
+  "dist/services/aiService.js"(exports2) {
+    "use strict";
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
+      return mod && mod.__esModule ? mod : { "default": mod };
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.analyzeContentWithAI = analyzeContentWithAI;
+    var js_yaml_1 = __importDefault(require_js_yaml());
+    var frontMatterService_1 = require_frontMatterService();
+    async function analyzeContentWithAI(content, openai, forbiddenTags, model, temperature) {
+      const maxContentLength = 4e3;
+      const truncatedContent = content.length > maxContentLength ? content.substring(0, maxContentLength) + "..." : content;
+      const frontMatter = (0, frontMatterService_1.extractFrontMatter)(content);
+      const existingTags = frontMatter?.tags || [];
+      const remainingSlots = 5 - existingTags.length;
+      if (remainingSlots <= 0) {
+        console.log("File already has 5 or more tags, skipping AI analysis");
+        return null;
+      }
+      const prompt = `
 Please analyze the following text and suggest ${remainingSlots} additional tags to reach a total of 5 tags.
 The text currently has the following tags: ${existingTags.join(", ")}
 
@@ -39058,174 +39089,199 @@ IMPORTANT: You must respond with ONLY a YAML object in the following format:
 tags:
   - name: "tag-name"
     reason: "reason for adding this tag"`;
-  try {
-    const response = await openai.chat.completions.create({
-      model,
-      messages: [
-        {
-          role: "system",
-          content: "You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text. You must respond with ONLY a YAML object in the specified format."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature
-    });
-    const result = response.choices[0].message.content;
-    if (!result)
-      return null;
-    const yamlContent = result.trim().replace(/^```yaml\n?/, "").replace(/```$/, "").trim();
-    if (!yamlContent.startsWith("tags:")) {
-      console.error("Invalid YAML format: missing tags: prefix");
-      return null;
-    }
-    try {
-      const parsed = js_yaml_1.default.load(yamlContent);
-      if (!parsed.tags || !Array.isArray(parsed.tags)) {
-        console.error("Invalid YAML format: tags array not found");
-        return null;
-      }
-      const newTags = parsed.tags.filter((t) => !existingTags.includes(t.name)).slice(0, remainingSlots);
-      return newTags.map((t) => ({
-        original: "",
-        suggested: t.name,
-        reason: t.reason
-      }));
-    } catch (error) {
-      console.error("Error parsing AI response:", error);
-      return null;
-    }
-  } catch (error) {
-    console.error("Error calling OpenAI API:", error);
-    return null;
-  }
-}
-async function processFile(filePath, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter) {
-  const content = await readFile(filePath);
-  if (!content)
-    return null;
-  if (filePath.toLowerCase().includes("readme.md")) {
-    console.log(`Skipping ${filePath} as it is a README file`);
-    return null;
-  }
-  try {
-    const frontMatter = extractFrontMatter(content);
-    if (!frontMatter) {
-      if (skipInvalidFrontmatter) {
-        console.log(`Skipping ${filePath} due to invalid front matter`);
-        return null;
-      }
-      throw new Error(`Invalid front matter in ${filePath}`);
-    }
-    const match = content.match(/^---\n([\s\S]*?)\n---/);
-    if (!match) {
-      if (skipInvalidFrontmatter) {
-        console.log(`Skipping ${filePath} due to missing front matter delimiters`);
-        return null;
-      }
-      throw new Error(`Missing front matter delimiters in ${filePath}`);
-    }
-    let originalFrontMatter;
-    try {
-      originalFrontMatter = js_yaml_1.default.load(match[1]);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      if (skipInvalidFrontmatter) {
-        console.log(`Skipping ${filePath} due to YAML parsing error: ${errorMessage}`);
-        return null;
-      }
-      throw new Error(`YAML parsing error in ${filePath}: ${errorMessage}`);
-    }
-    if (originalFrontMatter.tags && originalFrontMatter.tags.length >= 5) {
-      console.log(`Skipping ${filePath} as it already has 5 or more tags`);
-      return null;
-    }
-    const suggestions = await analyzeContentWithAI(content, openai, forbiddenTags, model, temperature);
-    if (!suggestions)
-      return null;
-    const uniqueOriginalTags = Array.from(new Set(originalFrontMatter.tags || []));
-    const remainingSlots = 5 - uniqueOriginalTags.length;
-    if (remainingSlots <= 0) {
-      console.log(`Skipping ${filePath} as it already has 5 or more tags`);
-      return null;
-    }
-    const uniqueSuggestions = Array.from(new Set(suggestions.map((s) => s.suggested))).map((suggested) => suggestions.find((s) => s.suggested === suggested)).filter((suggestion) => !uniqueOriginalTags.includes(suggestion.suggested)).slice(0, remainingSlots);
-    const newTags = new Set(uniqueSuggestions.slice(0, 5).map((s) => s.suggested));
-    const changes = Array.from(newTags).map((tag) => ({
-      file: filePath,
-      oldTag: "",
-      newTag: tag
-    }));
-    for (const suggestion of uniqueSuggestions) {
-      if (newTags.size >= 5)
-        break;
-      newTags.add(suggestion.suggested);
-      changes.push({
-        file: filePath,
-        oldTag: "",
-        newTag: suggestion.suggested
-      });
-    }
-    if (changes.length > 0) {
-      const originalFrontMatterStr = match[1];
-      const updatedFrontMatterStr = originalFrontMatterStr.replace(/^tags:.*$/m, `tags:
-${Array.from(newTags).map((tag) => `  - "${tag}"`).join("\n")}`);
-      const newContent = content.replace(/^---\n([\s\S]*?)\n---/m, `---
-${updatedFrontMatterStr}
----`);
-      await writeFile(filePath, newContent);
-    }
-    return changes;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    if (skipInvalidFrontmatter) {
-      console.log(`Skipping ${filePath} due to error: ${errorMessage}`);
-      return null;
-    }
-    throw error;
-  }
-}
-async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter) {
-  const changes = [];
-  const entries = await fs_1.promises.readdir(dirPath, { withFileTypes: true });
-  let processedFileCount = 0;
-  const MAX_FILES = 5;
-  let reachedMaxFiles = false;
-  for (const entry of entries) {
-    const fullPath = path_1.default.join(dirPath, entry.name);
-    if (entry.isDirectory()) {
-      if (!excludeFolders.includes(entry.name)) {
-        const subChanges = await processDirectory(fullPath, excludeFolders, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter);
-        changes.push(...subChanges);
-        processedFileCount += subChanges.length;
-      }
-    } else if (entry.isFile() && entry.name.endsWith(".md")) {
       try {
-        const fileChanges = await processFile(fullPath, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter);
-        if (fileChanges) {
-          changes.push(...fileChanges);
-          processedFileCount++;
+        const response = await openai.chat.completions.create({
+          model,
+          messages: [
+            {
+              role: "system",
+              content: "You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text. You must respond with ONLY a YAML object in the specified format."
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          temperature
+        });
+        const result = response.choices[0].message.content;
+        if (!result)
+          return null;
+        const yamlContent = result.trim().replace(/^```yaml\n?/, "").replace(/```$/, "").trim();
+        if (!yamlContent.startsWith("tags:")) {
+          console.error("Invalid YAML format: missing tags: prefix");
+          return null;
+        }
+        try {
+          const parsed = js_yaml_1.default.load(yamlContent);
+          if (!parsed.tags || !Array.isArray(parsed.tags)) {
+            console.error("Invalid YAML format: tags array not found");
+            return null;
+          }
+          const newTags = parsed.tags.filter((t) => !existingTags.includes(t.name)).slice(0, remainingSlots);
+          return newTags.map((t) => ({
+            original: "",
+            suggested: t.name,
+            reason: t.reason
+          }));
+        } catch (error) {
+          console.error("Error parsing AI response:", error);
+          return null;
         }
       } catch (error) {
-        if (!skipInvalidFrontmatter) {
-          throw error;
-        }
-        console.error(`Error processing ${fullPath}:`, error);
+        console.error("Error calling OpenAI API:", error);
+        return null;
       }
     }
-    if (processedFileCount >= MAX_FILES) {
-      reachedMaxFiles = true;
-      break;
+  }
+});
+
+// dist/services/processService.js
+var require_processService = __commonJS({
+  "dist/services/processService.js"(exports2) {
+    "use strict";
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
+      return mod && mod.__esModule ? mod : { "default": mod };
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.processFile = processFile;
+    exports2.processDirectory = processDirectory;
+    var js_yaml_1 = __importDefault(require_js_yaml());
+    var fileService_1 = require_fileService();
+    var frontMatterService_1 = require_frontMatterService();
+    var aiService_1 = require_aiService();
+    async function processFile(filePath, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter) {
+      const content = await (0, fileService_1.readFile)(filePath);
+      if (!content)
+        return null;
+      if (filePath.toLowerCase().includes("readme.md")) {
+        console.log(`Skipping ${filePath} as it is a README file`);
+        return null;
+      }
+      try {
+        const frontMatter = (0, frontMatterService_1.extractFrontMatter)(content);
+        if (!frontMatter) {
+          if (skipInvalidFrontmatter) {
+            console.log(`Skipping ${filePath} due to invalid front matter`);
+            return null;
+          }
+          throw new Error(`Invalid front matter in ${filePath}`);
+        }
+        const match = content.match(/^---\n([\s\S]*?)\n---/);
+        if (!match) {
+          if (skipInvalidFrontmatter) {
+            console.log(`Skipping ${filePath} due to missing front matter delimiters`);
+            return null;
+          }
+          throw new Error(`Missing front matter delimiters in ${filePath}`);
+        }
+        let originalFrontMatter;
+        try {
+          originalFrontMatter = js_yaml_1.default.load(match[1]);
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : "Unknown error";
+          if (skipInvalidFrontmatter) {
+            console.log(`Skipping ${filePath} due to YAML parsing error: ${errorMessage}`);
+            return null;
+          }
+          throw new Error(`YAML parsing error in ${filePath}: ${errorMessage}`);
+        }
+        if (originalFrontMatter.tags && originalFrontMatter.tags.length >= 5) {
+          console.log(`Skipping ${filePath} as it already has 5 or more tags`);
+          return null;
+        }
+        const suggestions = await (0, aiService_1.analyzeContentWithAI)(content, openai, forbiddenTags, model, temperature);
+        if (!suggestions)
+          return null;
+        const uniqueOriginalTags = Array.from(new Set(originalFrontMatter.tags || []));
+        const remainingSlots = 5 - uniqueOriginalTags.length;
+        if (remainingSlots <= 0) {
+          console.log(`Skipping ${filePath} as it already has 5 or more tags`);
+          return null;
+        }
+        const uniqueSuggestions = Array.from(new Set(suggestions.map((s) => s.suggested))).map((suggested) => suggestions.find((s) => s.suggested === suggested)).filter((suggestion) => !uniqueOriginalTags.includes(suggestion.suggested)).slice(0, remainingSlots);
+        const newTags = new Set(uniqueSuggestions.slice(0, 5).map((s) => s.suggested));
+        const changes = Array.from(newTags).map((tag) => ({
+          file: filePath,
+          oldTag: "",
+          newTag: tag
+        }));
+        for (const suggestion of uniqueSuggestions) {
+          if (newTags.size >= 5)
+            break;
+          newTags.add(suggestion.suggested);
+          changes.push({
+            file: filePath,
+            oldTag: "",
+            newTag: suggestion.suggested
+          });
+        }
+        if (changes.length > 0) {
+          const originalFrontMatterStr = match[1];
+          const updatedFrontMatterStr = originalFrontMatterStr.replace(/^tags:.*$/m, `tags:
+${Array.from(newTags).map((tag) => `  - "${tag}"`).join("\n")}`);
+          const newContent = content.replace(/^---\n([\s\S]*?)\n---/m, `---
+${updatedFrontMatterStr}
+---`);
+          await (0, fileService_1.writeFile)(filePath, newContent);
+        }
+        return changes;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        if (skipInvalidFrontmatter) {
+          console.log(`Skipping ${filePath} due to error: ${errorMessage}`);
+          return null;
+        }
+        throw error;
+      }
+    }
+    async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter) {
+      const changes = [];
+      const entries = await (0, fileService_1.readDirectory)(dirPath);
+      let processedFileCount = 0;
+      const MAX_FILES = 5;
+      let reachedMaxFiles = false;
+      for (const entry of entries) {
+        const fullPath = (0, fileService_1.joinPath)(dirPath, entry.name);
+        if (entry.isDirectory()) {
+          if (!excludeFolders.includes(entry.name)) {
+            const subChanges = await processDirectory(fullPath, excludeFolders, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter);
+            changes.push(...subChanges);
+            processedFileCount += subChanges.length;
+          }
+        } else if (entry.isFile() && entry.name.endsWith(".md")) {
+          try {
+            const fileChanges = await processFile(fullPath, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter);
+            if (fileChanges) {
+              changes.push(...fileChanges);
+              processedFileCount++;
+            }
+          } catch (error) {
+            if (!skipInvalidFrontmatter) {
+              throw error;
+            }
+            console.error(`Error processing ${fullPath}:`, error);
+          }
+        }
+        if (processedFileCount >= MAX_FILES) {
+          reachedMaxFiles = true;
+          break;
+        }
+      }
+      if (reachedMaxFiles) {
+        console.log(`
+Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
+      }
+      return changes;
     }
   }
-  if (reachedMaxFiles) {
-    console.log(`
-Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
-  }
-  return changes;
-}
+});
+
+// dist/index.js
+Object.defineProperty(exports, "__esModule", { value: true });
+var openai_1 = require_openai();
+var config_1 = require_config();
+var processService_1 = require_processService();
 async function main() {
   try {
     const inputs = (0, config_1.parseInputs)();
@@ -39238,7 +39294,7 @@ async function main() {
     console.log(`Forbidden tags: ${inputs.forbiddenTags.join(", ")}`);
     console.log(`Skip invalid front matter: ${inputs.skipInvalidFrontmatter}
 `);
-    const changes = await processDirectory(inputs.targetFolder, inputs.excludeFolders, openai, inputs.forbiddenTags, inputs.model, inputs.temperature, inputs.skipInvalidFrontmatter);
+    const changes = await (0, processService_1.processDirectory)(inputs.targetFolder, inputs.excludeFolders, openai, inputs.forbiddenTags, inputs.model, inputs.temperature, inputs.skipInvalidFrontmatter);
     if (changes.length > 0) {
       console.log("\nTag changes made:");
       changes.forEach((change) => {

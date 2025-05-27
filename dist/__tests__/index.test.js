@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_1 = require("../index");
+const processService_1 = require("../services/processService");
+const frontMatterService_1 = require("../services/frontMatterService");
 const fs_1 = require("fs");
 describe('extractFrontMatter (正常系)', () => {
     it('should extract front matter from content', () => {
@@ -9,7 +10,7 @@ describe('extractFrontMatter (正常系)', () => {
             tags: ['test', 'example'],
             title: 'Test Note',
         };
-        expect((0, index_1.extractFrontMatter)(content)).toEqual(expected);
+        expect((0, frontMatterService_1.extractFrontMatter)(content)).toEqual(expected);
     });
 });
 describe('processDirectory (ファイル制限)', () => {
@@ -50,7 +51,7 @@ describe('processDirectory (ファイル制限)', () => {
         mockReadDir.mockResolvedValue(mockFiles);
         mockReadFile.mockResolvedValue('---\ntags: []\n---\ncontent');
         mockWriteFile.mockResolvedValue(undefined);
-        await (0, index_1.processDirectory)('/test/path', [], mockOpenAI, [], 'gpt-3.5-turbo', 0.7, false);
+        await (0, processService_1.processDirectory)('/test/path', [], mockOpenAI, [], 'gpt-3.5-turbo', 0.7, false);
         // 5つのファイルのみが処理されたことを確認
         expect(mockReadFile).toHaveBeenCalledTimes(5);
         expect(mockWriteFile).toHaveBeenCalledTimes(5);
@@ -100,10 +101,10 @@ describe('processDirectory (ファイル制限)', () => {
                 },
             },
         };
-        await (0, index_1.processDirectory)('/test/path', [], mockOpenAIOver5, [], 'gpt-3.5-turbo', 0.7, false);
+        await (0, processService_1.processDirectory)('/test/path', [], mockOpenAIOver5, [], 'gpt-3.5-turbo', 0.7, false);
         // 書き込まれた内容のタグ数が5個であることを確認
         const writtenContent = mockWriteFile.mock.calls[0][1];
-        const frontMatter = (0, index_1.extractFrontMatter)(writtenContent);
+        const frontMatter = (0, frontMatterService_1.extractFrontMatter)(writtenContent);
         expect(frontMatter?.tags).toHaveLength(5);
     });
 });

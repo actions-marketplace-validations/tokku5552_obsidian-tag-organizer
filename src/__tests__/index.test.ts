@@ -1,5 +1,7 @@
-import { extractFrontMatter, processDirectory } from '../index';
-import { promises as fs, Dirent } from 'fs';
+import { processDirectory } from '../services/processService';
+import { extractFrontMatter } from '../services/frontMatterService';
+import { promises as fs } from 'fs';
+import { Dirent } from 'fs';
 import { OpenAI } from 'openai';
 
 describe('extractFrontMatter (正常系)', () => {
