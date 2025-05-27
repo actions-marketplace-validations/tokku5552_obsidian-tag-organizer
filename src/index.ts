@@ -52,6 +52,10 @@ export async function analyzeContentWithAI(
   model: string,
   temperature: number
 ): Promise<TagSuggestion[] | null> {
+  const maxContentLength = 4000;
+  const truncatedContent =
+    content.length > maxContentLength ? content.substring(0, maxContentLength) + '...' : content;
+
   const prompt = `
 Please analyze the following text and suggest additional tags to reach a total of 5 tags.
 The text currently has the following tags: ${(extractFrontMatter(content)?.tags || []).join(', ')}
@@ -66,13 +70,12 @@ Tag rules:
 - The following tags are forbidden: ${forbiddenTags.join(', ')}
 
 Text:
-${content}
+${truncatedContent}
 
-Please return the tags in the following format (yaml):
+Please return ONLY the tags in the following format (yaml):
 tags:
   - name: "tag-name"
-    reason: "reason for adding this tag"
-`;
+    reason: "reason for adding this tag"`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -81,7 +84,7 @@ tags:
         {
           role: 'system',
           content:
-            'You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text.',
+            'You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text. Return ONLY the YAML format as specified.',
         },
         {
           role: 'user',
@@ -94,11 +97,18 @@ tags:
     const result = response.choices[0].message.content;
     if (!result) return null;
 
-    const match = result.match(/tags:\n([\s\S]*?)(?:\n\n|$)/);
-    if (!match) return null;
+    const yamlContent = result.trim();
+    if (!yamlContent.startsWith('tags:')) {
+      console.error('Invalid YAML format: missing tags: prefix');
+      return null;
+    }
 
     try {
-      const parsed = yaml.load(match[0]) as { tags: { name: string; reason: string }[] };
+      const parsed = yaml.load(yamlContent) as { tags: { name: string; reason: string }[] };
+      if (!parsed.tags || !Array.isArray(parsed.tags)) {
+        console.error('Invalid YAML format: tags array not found');
+        return null;
+      }
       return parsed.tags.map((t) => ({
         original: '',
         suggested: t.name,
@@ -125,6 +135,11 @@ export async function processFile(
   const content = await readFile(filePath);
   if (!content) return null;
 
+  if (filePath.toLowerCase().includes('readme.md')) {
+    console.log(`Skipping ${filePath} as it is a README file`);
+    return null;
+  }
+
   const frontMatter = extractFrontMatter(content);
   if (!frontMatter) {
     if (skipInvalidFrontmatter) {
@@ -134,14 +149,11 @@ export async function processFile(
     throw new Error(`Invalid front matter in ${filePath}`);
   }
 
-  // Get the original front matter content
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return null;
 
-  // Parse the original front matter
   const originalFrontMatter = yaml.load(match[1]) as FrontMatter;
 
-  // Skip if tags already exist and have 5 or more tags
   if (originalFrontMatter.tags && originalFrontMatter.tags.length >= 5) {
     console.log(`Skipping ${filePath} as it already has 5 or more tags`);
     return null;
@@ -161,7 +173,7 @@ export async function processFile(
   const newTags = new Set<string>(originalFrontMatter.tags || []);
 
   for (const suggestion of suggestions) {
-    if (newTags.size >= 5) break; // Stop if we already have 5 tags
+    if (newTags.size >= 5) break;
     if (!newTags.has(suggestion.suggested)) {
       newTags.add(suggestion.suggested);
       changes.push({
@@ -173,23 +185,20 @@ export async function processFile(
   }
 
   if (changes.length > 0) {
-    // Create new front matter with updated tags
     const newFrontMatter = {
       ...originalFrontMatter,
       tags: Array.from(newTags),
     };
 
-    // Convert to YAML with specific options to maintain format
     const newYaml = yaml.dump(newFrontMatter, {
-      lineWidth: -1, // Prevent line wrapping
-      noRefs: true, // Prevent anchor/alias references
-      sortKeys: false, // Maintain original key order
-      quotingType: '"', // Use double quotes for strings
-      forceQuotes: true, // Force quotes for all strings
-      indent: 2, // Use 2 spaces for indentation
+      lineWidth: -1,
+      noRefs: true,
+      sortKeys: false,
+      quotingType: '"',
+      forceQuotes: true,
+      indent: 2,
     });
 
-    // Create the new content with updated front matter
     const newContent = content.replace(match[0], `---\n${newYaml}---`);
 
     await writeFile(filePath, newContent);

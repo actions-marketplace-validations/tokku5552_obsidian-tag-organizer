@@ -39029,6 +39029,8 @@ function updateFrontMatter(content, newTags) {
 ${newFrontMatter}---`);
 }
 async function analyzeContentWithAI(content, openai, forbiddenTags, model, temperature) {
+  const maxContentLength = 4e3;
+  const truncatedContent = content.length > maxContentLength ? content.substring(0, maxContentLength) + "..." : content;
   const prompt = `
 Please analyze the following text and suggest additional tags to reach a total of 5 tags.
 The text currently has the following tags: ${(extractFrontMatter(content)?.tags || []).join(", ")}
@@ -39043,20 +39045,19 @@ Tag rules:
 - The following tags are forbidden: ${forbiddenTags.join(", ")}
 
 Text:
-${content}
+${truncatedContent}
 
-Please return the tags in the following format (yaml):
+Please return ONLY the tags in the following format (yaml):
 tags:
   - name: "tag-name"
-    reason: "reason for adding this tag"
-`;
+    reason: "reason for adding this tag"`;
   try {
     const response = await openai.chat.completions.create({
       model,
       messages: [
         {
           role: "system",
-          content: "You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text."
+          content: "You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text. Return ONLY the YAML format as specified."
         },
         {
           role: "user",
@@ -39068,11 +39069,17 @@ tags:
     const result = response.choices[0].message.content;
     if (!result)
       return null;
-    const match = result.match(/tags:\n([\s\S]*?)(?:\n\n|$)/);
-    if (!match)
+    const yamlContent = result.trim();
+    if (!yamlContent.startsWith("tags:")) {
+      console.error("Invalid YAML format: missing tags: prefix");
       return null;
+    }
     try {
-      const parsed = js_yaml_1.default.load(match[0]);
+      const parsed = js_yaml_1.default.load(yamlContent);
+      if (!parsed.tags || !Array.isArray(parsed.tags)) {
+        console.error("Invalid YAML format: tags array not found");
+        return null;
+      }
       return parsed.tags.map((t) => ({
         original: "",
         suggested: t.name,
@@ -39091,6 +39098,10 @@ async function processFile(filePath, openai, forbiddenTags, model, temperature, 
   const content = await readFile(filePath);
   if (!content)
     return null;
+  if (filePath.toLowerCase().includes("readme.md")) {
+    console.log(`Skipping ${filePath} as it is a README file`);
+    return null;
+  }
   const frontMatter = extractFrontMatter(content);
   if (!frontMatter) {
     if (skipInvalidFrontmatter) {
@@ -39131,17 +39142,11 @@ async function processFile(filePath, openai, forbiddenTags, model, temperature, 
     };
     const newYaml = js_yaml_1.default.dump(newFrontMatter, {
       lineWidth: -1,
-      // Prevent line wrapping
       noRefs: true,
-      // Prevent anchor/alias references
       sortKeys: false,
-      // Maintain original key order
       quotingType: '"',
-      // Use double quotes for strings
       forceQuotes: true,
-      // Force quotes for all strings
       indent: 2
-      // Use 2 spaces for indentation
     });
     const newContent = content.replace(match[0], `---
 ${newYaml}---`);
