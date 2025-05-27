@@ -125,7 +125,6 @@ tags:
         return null;
       }
 
-      // 既存のタグを除外
       const newTags = parsed.tags
         .filter((t) => !existingTags.includes(t.name))
         .slice(0, remainingSlots);
@@ -207,7 +206,6 @@ export async function processFile(
 
     if (!suggestions) return null;
 
-    // 既存のタグを一意にする
     const uniqueOriginalTags = Array.from(new Set(originalFrontMatter.tags || []));
 
     const remainingSlots = 5 - uniqueOriginalTags.length;
@@ -217,16 +215,13 @@ export async function processFile(
       return null;
     }
 
-    // 提案されたタグから重複を除去し、既存タグとの重複も排除
     const uniqueSuggestions = Array.from(new Set(suggestions.map((s) => s.suggested)))
       .map((suggested) => suggestions.find((s) => s.suggested === suggested)!)
       .filter((suggestion) => !uniqueOriginalTags.includes(suggestion.suggested))
       .slice(0, remainingSlots);
 
-    // 5つだけ取得してnewTagsに設定
     const newTags = new Set<string>(uniqueSuggestions.slice(0, 5).map((s) => s.suggested));
 
-    // changesの生成をnewTagsを元にして行う
     const changes: TagChange[] = Array.from(newTags).map((tag) => ({
       file: filePath,
       oldTag: '',
@@ -244,10 +239,8 @@ export async function processFile(
     }
 
     if (changes.length > 0) {
-      // 元のフロントマターを文字列として保持
       const originalFrontMatterStr = match[1];
 
-      // タグのみを更新（重複は既に除去済み）
       const updatedFrontMatterStr = originalFrontMatterStr.replace(
         /^tags:.*$/m,
         `tags:\n${Array.from(newTags)
@@ -255,7 +248,6 @@ export async function processFile(
           .join('\n')}`
       );
 
-      // 元の改行を保持して置換
       const newContent = content.replace(
         /^---\n([\s\S]*?)\n---/m,
         `---\n${updatedFrontMatterStr}\n---`
