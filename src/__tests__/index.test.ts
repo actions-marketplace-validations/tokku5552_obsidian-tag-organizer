@@ -1,5 +1,5 @@
 import { extractFrontMatter, processDirectory } from '../index';
-import { promises as fs } from 'fs';
+import { promises as fs, Dirent } from 'fs';
 import { OpenAI } from 'openai';
 
 describe('extractFrontMatter (正常系)', () => {
@@ -48,9 +48,10 @@ describe('processDirectory (ファイル制限)', () => {
         name: `test${i}.md`,
         isFile: (): boolean => true,
         isDirectory: (): boolean => false,
-      }));
+      })) as Partial<Dirent>[];
 
-    mockReadDir.mockResolvedValue(mockFiles as any);
+    // @ts-expect-error: test mock for Dirent
+    mockReadDir.mockResolvedValue(mockFiles);
     mockReadFile.mockResolvedValue('---\ntags: [test]\n---\ncontent');
     mockWriteFile.mockResolvedValue(undefined);
 
