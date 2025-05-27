@@ -25,6 +25,10 @@ inputs:
     description: 'Temperature for OpenAI API (default: 0.7)'
     required: false
     default: '0.7'
+  skip-invalid-frontmatter:
+    description: 'Skip files with invalid front matter instead of failing (default: "false")'
+    required: false
+    default: 'false'
 
 runs:
   using: 'node20'

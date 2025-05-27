@@ -55,7 +55,15 @@ describe('processDirectory (ファイル制限)', () => {
     mockReadFile.mockResolvedValue('---\ntags: [test]\n---\ncontent');
     mockWriteFile.mockResolvedValue(undefined);
 
-    const result = await processDirectory('/test/path', [], mockOpenAI, [], 'gpt-3.5-turbo', 0.7);
+    const result = await processDirectory(
+      '/test/path',
+      [],
+      mockOpenAI,
+      [],
+      'gpt-3.5-turbo',
+      0.7,
+      false
+    );
 
     // 5つのファイルのみが処理されたことを確認
     expect(mockReadFile).toHaveBeenCalledTimes(5);

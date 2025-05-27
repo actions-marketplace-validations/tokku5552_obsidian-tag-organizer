@@ -1,4 +1,5 @@
 export interface FrontMatter {
+  title?: string;
   tags?: string[];
   [key: string]: string | string[] | number | boolean | undefined;
 }
@@ -34,4 +35,5 @@ export interface ActionInputs {
   forbiddenTags: string[];
   model: string;
   temperature: number;
+  skipInvalidFrontmatter: boolean;
 }

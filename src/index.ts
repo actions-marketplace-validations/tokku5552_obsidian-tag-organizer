@@ -114,13 +114,20 @@ export async function processFile(
   openai: OpenAI,
   forbiddenTags: string[],
   model: string,
-  temperature: number
+  temperature: number,
+  skipInvalidFrontmatter: boolean
 ): Promise<TagChange[] | null> {
   const content = await readFile(filePath);
   if (!content) return null;
 
   const frontMatter = extractFrontMatter(content);
-  if (!frontMatter || !frontMatter.tags) return null;
+  if (!frontMatter || !frontMatter.tags) {
+    if (skipInvalidFrontmatter) {
+      console.log(`Skipping ${filePath} due to invalid front matter`);
+      return null;
+    }
+    throw new Error(`Invalid front matter in ${filePath}`);
+  }
 
   const currentTags = frontMatter.tags;
   const suggestions = await analyzeContentWithAI(
@@ -162,7 +169,8 @@ export async function processDirectory(
   openai: OpenAI,
   forbiddenTags: string[],
   model: string,
-  temperature: number
+  temperature: number,
+  skipInvalidFrontmatter: boolean
 ): Promise<TagChange[]> {
   const changes: TagChange[] = [];
   const entries = await fs.readdir(dirPath, { withFileTypes: true });
@@ -185,15 +193,30 @@ export async function processDirectory(
           openai,
           forbiddenTags,
           model,
-          temperature
+          temperature,
+          skipInvalidFrontmatter
         );
         changes.push(...subChanges);
       }
     } else if (entry.isFile() && entry.name.endsWith('.md')) {
-      const fileChanges = await processFile(fullPath, openai, forbiddenTags, model, temperature);
-      if (fileChanges) {
-        changes.push(...fileChanges);
-        processedFileCount++;
+      try {
+        const fileChanges = await processFile(
+          fullPath,
+          openai,
+          forbiddenTags,
+          model,
+          temperature,
+          skipInvalidFrontmatter
+        );
+        if (fileChanges) {
+          changes.push(...fileChanges);
+          processedFileCount++;
+        }
+      } catch (error) {
+        if (!skipInvalidFrontmatter) {
+          throw error;
+        }
+        console.error(`Error processing ${fullPath}:`, error);
       }
     }
   }
@@ -212,6 +235,7 @@ async function main(): Promise<void> {
     console.log(`Target folder: ${inputs.targetFolder}`);
     console.log(`Exclude folders: ${inputs.excludeFolders.join(', ')}`);
     console.log(`Forbidden tags: ${inputs.forbiddenTags.join(', ')}`);
+    console.log(`Skip invalid front matter: ${inputs.skipInvalidFrontmatter}`);
 
     const changes = await processDirectory(
       inputs.targetFolder,
@@ -219,7 +243,8 @@ async function main(): Promise<void> {
       openai,
       inputs.forbiddenTags,
       inputs.model,
-      inputs.temperature
+      inputs.temperature,
+      inputs.skipInvalidFrontmatter
     );
 
     if (changes.length > 0) {
