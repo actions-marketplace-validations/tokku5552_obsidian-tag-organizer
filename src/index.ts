@@ -253,11 +253,6 @@ export async function processDirectory(
   const MAX_FILES = 5;
 
   for (const entry of entries) {
-    if (processedFileCount >= MAX_FILES) {
-      console.log(`Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
-      break;
-    }
-
     const fullPath = path.join(dirPath, entry.name);
 
     if (entry.isDirectory()) {
@@ -272,6 +267,7 @@ export async function processDirectory(
           skipInvalidFrontmatter
         );
         changes.push(...subChanges);
+        processedFileCount += subChanges.length;
       }
     } else if (entry.isFile() && entry.name.endsWith('.md')) {
       try {
@@ -287,12 +283,17 @@ export async function processDirectory(
           changes.push(...fileChanges);
           processedFileCount++;
         }
-      } catch (error) {
+      } catch (error: unknown) {
         if (!skipInvalidFrontmatter) {
           throw error;
         }
         console.error(`Error processing ${fullPath}:`, error);
       }
+    }
+
+    if (processedFileCount >= MAX_FILES) {
+      console.log(`Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
+      break;
     }
   }
 

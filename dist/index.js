@@ -39184,15 +39184,12 @@ async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, 
   let processedFileCount = 0;
   const MAX_FILES = 5;
   for (const entry of entries) {
-    if (processedFileCount >= MAX_FILES) {
-      console.log(`Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
-      break;
-    }
     const fullPath = path_1.default.join(dirPath, entry.name);
     if (entry.isDirectory()) {
       if (!excludeFolders.includes(entry.name)) {
         const subChanges = await processDirectory(fullPath, excludeFolders, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter);
         changes.push(...subChanges);
+        processedFileCount += subChanges.length;
       }
     } else if (entry.isFile() && entry.name.endsWith(".md")) {
       try {
@@ -39207,6 +39204,10 @@ async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, 
         }
         console.error(`Error processing ${fullPath}:`, error);
       }
+    }
+    if (processedFileCount >= MAX_FILES) {
+      console.log(`Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
+      break;
     }
   }
   return changes;
