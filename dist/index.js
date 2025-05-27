@@ -39031,9 +39031,16 @@ ${newFrontMatter}---`);
 async function analyzeContentWithAI(content, openai, forbiddenTags, model, temperature) {
   const maxContentLength = 4e3;
   const truncatedContent = content.length > maxContentLength ? content.substring(0, maxContentLength) + "..." : content;
+  const frontMatter = extractFrontMatter(content);
+  const existingTags = frontMatter?.tags || [];
+  const remainingSlots = 5 - existingTags.length;
+  if (remainingSlots <= 0) {
+    console.log("File already has 5 or more tags, skipping AI analysis");
+    return null;
+  }
   const prompt = `
-Please analyze the following text and suggest additional tags to reach a total of 5 tags.
-The text currently has the following tags: ${(extractFrontMatter(content)?.tags || []).join(", ")}
+Please analyze the following text and suggest ${remainingSlots} additional tags to reach a total of 5 tags.
+The text currently has the following tags: ${existingTags.join(", ")}
 
 Tag rules:
 - Use lowercase only
@@ -39041,7 +39048,7 @@ Tag rules:
 - Use only content tags (no status or time tags)
 - Use singular form as default
 - Only use special characters: hyphen (-), underscore (_), and slash (/)
-- Suggest enough tags to reach a total of 5 tags
+- Do not suggest tags that already exist
 - The following tags are forbidden: ${forbiddenTags.join(", ")}
 
 Text:
@@ -39080,7 +39087,8 @@ tags:
         console.error("Invalid YAML format: tags array not found");
         return null;
       }
-      return parsed.tags.map((t) => ({
+      const newTags = parsed.tags.filter((t) => !existingTags.includes(t.name)).slice(0, remainingSlots);
+      return newTags.map((t) => ({
         original: "",
         suggested: t.name,
         reason: t.reason
