@@ -4,14 +4,12 @@ import * as core from '@actions/core';
 
 function parseYamlList(input: string): string[] {
   try {
-    // Try to parse as YAML list
-    const parsed = yaml.load(input) as string[];
+    const parsed = yaml.load(input);
     if (Array.isArray(parsed)) {
       return parsed;
     }
   } catch {
-    // If parsing fails, fall back to comma-separated string
-    return input.split(',').filter(Boolean);
+    return [];
   }
   return [];
 }
