@@ -208,25 +208,18 @@ export async function processFile(
     }
 
     if (changes.length > 0) {
-      const newFrontMatter = {
-        ...originalFrontMatter,
-        tags: Array.from(newTags),
-      };
+      // 元のフロントマターを文字列として保持
+      const originalFrontMatterStr = match[1];
 
-      const newYaml = yaml.dump(newFrontMatter, {
-        lineWidth: -1,
-        noRefs: true,
-        sortKeys: false,
-        quotingType: '"',
-        forceQuotes: true,
-        indent: 2,
-        styles: {
-          '!!null': 'empty',
-          '!!timestamp': 'canonical',
-        },
-      });
+      // タグのみを更新
+      const updatedFrontMatterStr = originalFrontMatterStr.replace(
+        /^tags:.*$/m,
+        `tags:\n${Array.from(newTags)
+          .map((tag) => `  - "${tag}"`)
+          .join('\n')}`
+      );
 
-      const newContent = content.replace(match[0], `---\n${newYaml}---`);
+      const newContent = content.replace(match[0], `---\n${updatedFrontMatterStr}---`);
 
       await writeFile(filePath, newContent);
     }

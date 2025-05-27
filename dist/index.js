@@ -39152,24 +39152,11 @@ async function processFile(filePath, openai, forbiddenTags, model, temperature, 
       }
     }
     if (changes.length > 0) {
-      const newFrontMatter = {
-        ...originalFrontMatter,
-        tags: Array.from(newTags)
-      };
-      const newYaml = js_yaml_1.default.dump(newFrontMatter, {
-        lineWidth: -1,
-        noRefs: true,
-        sortKeys: false,
-        quotingType: '"',
-        forceQuotes: true,
-        indent: 2,
-        styles: {
-          "!!null": "empty",
-          "!!timestamp": "canonical"
-        }
-      });
+      const originalFrontMatterStr = match[1];
+      const updatedFrontMatterStr = originalFrontMatterStr.replace(/^tags:.*$/m, `tags:
+${Array.from(newTags).map((tag) => `  - "${tag}"`).join("\n")}`);
       const newContent = content.replace(match[0], `---
-${newYaml}---`);
+${updatedFrontMatterStr}---`);
       await writeFile(filePath, newContent);
     }
     return changes;
