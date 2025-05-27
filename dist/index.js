@@ -39147,7 +39147,8 @@ async function processFile(filePath, openai, forbiddenTags, model, temperature, 
       return null;
     const changes = [];
     const newTags = new Set(originalFrontMatter.tags || []);
-    for (const suggestion of suggestions) {
+    const uniqueSuggestions = suggestions.filter((suggestion, index, self2) => index === self2.findIndex((s) => s.suggested === suggestion.suggested));
+    for (const suggestion of uniqueSuggestions) {
       if (newTags.size >= 5)
         break;
       if (!newTags.has(suggestion.suggested)) {

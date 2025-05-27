@@ -211,7 +211,13 @@ export async function processFile(
     // 既存のタグを保持しつつ、重複を除去して最大5つに制限
     const newTags = new Set<string>(originalFrontMatter.tags || []);
 
-    for (const suggestion of suggestions) {
+    // 提案されたタグから重複を除去
+    const uniqueSuggestions = suggestions.filter(
+      (suggestion, index, self) =>
+        index === self.findIndex((s) => s.suggested === suggestion.suggested)
+    );
+
+    for (const suggestion of uniqueSuggestions) {
       if (newTags.size >= 5) break;
       if (!newTags.has(suggestion.suggested)) {
         newTags.add(suggestion.suggested);
