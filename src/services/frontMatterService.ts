@@ -1,6 +1,6 @@
 import yaml from 'js-yaml';
-import { FrontMatter, TargetFile } from '../types';
 import { writeFile } from '../infrastructure/files';
+import { FrontMatter, TargetFile } from '../types';
 
 export function extractFrontMatter(content: string): FrontMatter | null {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
