@@ -18,17 +18,17 @@ inputs:
     required: false
     default: ''
   model:
-    description: 'OpenAI model to use (default: "gpt-4")'
+    description: 'OpenAI model to use (default: "gpt-3.5-turbo")'
     required: false
-    default: 'gpt-4'
+    default: 'gpt-3.5-turbo'
   temperature:
     description: 'Temperature for OpenAI API (default: 0.7)'
     required: false
     default: '0.7'
   skip-invalid-frontmatter:
-    description: 'Skip files with invalid front matter instead of failing (default: "false")'
+    description: 'Skip files with invalid front matter instead of failing (default: "true")'
     required: false
-    default: 'false'
+    default: 'true'
 
 runs:
   using: 'node20'
