@@ -1,28 +1,41 @@
 import { ActionInputs } from './types';
 import * as yaml from 'js-yaml';
+import * as core from '@actions/core';
 
 function parseYamlList(input: string): string[] {
+  if (!input) return [];
   try {
-    // Try to parse as YAML list
     const parsed = yaml.load(input) as string[];
-    if (Array.isArray(parsed)) {
-      return parsed;
-    }
-  } catch {
-    // If parsing fails, fall back to comma-separated string
-    return input.split(',').filter(Boolean);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error('Error parsing YAML list:', error);
+    return [];
   }
-  return [];
 }
 
 export function parseInputs(): ActionInputs {
+  const openaiApiKey = core.getInput('openai-api-key', { required: true });
+  const targetFolder = core.getInput('target-folder') || '.';
+  const excludeFolders = parseYamlList(core.getInput('exclude-folders'));
+  const forbiddenTags = parseYamlList(core.getInput('forbidden-tags'));
+  const model = core.getInput('model') || 'gpt-4';
+  const temperature = parseFloat(core.getInput('temperature') || '0.7');
+  const skipInvalidFrontmatter = core.getBooleanInput('skip-invalid-frontmatter') || true;
+  const maxTags = parseInt(core.getInput('max-tags') || '5');
+  const maxFiles = parseInt(core.getInput('max-files') || '5');
+  const maxContentLength = parseInt(core.getInput('max-content-length') || '4000');
+
   const inputs: ActionInputs = {
-    openaiApiKey: process.env.INPUT_OPENAI_API_KEY || '',
-    targetFolder: process.env.INPUT_TARGET_FOLDER || '.',
-    excludeFolders: parseYamlList(process.env.INPUT_EXCLUDE_FOLDERS || ''),
-    forbiddenTags: parseYamlList(process.env.INPUT_FORBIDDEN_TAGS || ''),
-    model: process.env.INPUT_MODEL || 'gpt-4',
-    temperature: parseFloat(process.env.INPUT_TEMPERATURE || '0.7'),
+    openaiApiKey,
+    targetFolder,
+    excludeFolders,
+    forbiddenTags,
+    model,
+    temperature,
+    skipInvalidFrontmatter,
+    maxTags,
+    maxFiles,
+    maxContentLength,
   };
 
   validateInputs(inputs);
@@ -42,26 +55,3 @@ function validateInputs(inputs: ActionInputs): void {
     throw new Error('Model must be either gpt-3.5-turbo or gpt-4');
   }
 }
-
-export const DEFAULT_CONFIG = {
-  maxTokens: 2000,
-  maxRetries: 3,
-  retryDelay: 1000,
-  supportedFileExtensions: ['.md'],
-  tagPattern: /#[\w-]+/g,
-  /**
-   * Default target folders for tag organization.
-   * These folders are processed recursively for tag updates.
-   */
-  targetFolders: ['Clippings', 'Daily', 'Zettelkasten'],
-  /**
-   * Folders to exclude from tag organization.
-   * These folders and their contents will be skipped.
-   */
-  excludeFolders: ['Template'],
-  /**
-   * Tags that should not be used or suggested.
-   * These tags are considered system tags and should not be modified.
-   */
-  forbiddenTags: ['TODO', 'ROUTINE', 'JOURNAL', 'STUDY', 'EXERCISE'],
-};

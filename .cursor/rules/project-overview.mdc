@@ -7,6 +7,9 @@ alwaysApply: true
 
 This project is a GitHub Action that helps organize tags in Obsidian markdown files. It provides automated tag management and organization capabilities.
 
+## To do nessesary
+- you should use `yarn`. Don't use `npm`
+
 ## Main Components
 
 - [src/index.ts](mdc:src/index.ts): The main entry point of the application

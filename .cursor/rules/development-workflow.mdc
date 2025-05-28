@@ -23,15 +23,26 @@ alwaysApply: false
    - Follow the ESLint rules in [.eslintrc.json](mdc:.eslintrc.json)
    - Use Prettier for formatting (configured in [.prettierrc](mdc:.prettierrc))
    - Run `yarn lint` to check code style
+   - Pre-commit hook will automatically run linting
 
 2. **Testing**
    - Write tests in [src/__tests__/](mdc:src/__tests__)
    - Run tests with `yarn test`
    - Check coverage with `yarn test:coverage`
+   - Pre-commit hook will automatically run tests
+   - CI will run tests on all PRs and pushes to main
 
 3. **Building**
    - Build the project with `yarn build`
    - Output goes to the `dist/` directory
+   - Pre-commit hook will verify build succeeds
+   - CI will verify build on all PRs and pushes to main
+
+4. **GitHub Actions**
+   - Test the action locally using [act](mdc:https:/github.com/nektos/act)
+   - Verify all inputs are properly handled using `@actions/core`
+   - Test with both required and optional parameters
+   - Verify error handling and edge cases
 
 ## Git Workflow
 
@@ -44,10 +55,18 @@ alwaysApply: false
 2. **Commits**
    - Follow conventional commits
    - Run `yarn commit` for guided commit messages
+   - Pre-commit hooks will run automatically:
+     - Linting
+     - Tests
+     - Build verification
 
 3. **Pull Requests**
    - Create PRs from feature/fix branches
-   - Ensure all tests pass
+   - CI will automatically:
+     - Run tests
+     - Check code style
+     - Verify build
+     - Run action tests
    - Update documentation as needed
 
 ## Release Process
@@ -56,3 +75,27 @@ alwaysApply: false
 2. Update [action.yml](mdc:action.yml) if needed
 3. Create a new release tag
 4. Deploy to GitHub Actions marketplace
+5. Verify the action works in a test repository
+
+## Automated Checks
+
+The following checks are automated:
+
+1. **Pre-commit Hooks**
+   - Linting
+   - Tests
+   - Build verification
+
+2. **CI Pipeline**
+   - Linting
+   - Tests
+   - Build verification
+   - Action tests
+   - Input validation
+   - Error handling verification
+
+3. **Release Checks**
+   - Version consistency
+   - Documentation updates
+   - Action.yml validation
+   - Marketplace compatibility
