@@ -15,7 +15,7 @@ Thank you for your interest in contributing to Obsidian Tag Organizer! This docu
 1. Fork and clone the repository:
 
    ```bash
-   git clone https://github.com/tokudashinnosuke/obsidian-tag-organizer.git
+   git clone https://github.com/tokku5552/obsidian-tag-organizer.git
    cd obsidian-tag-organizer
    ```
 

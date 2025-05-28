@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: tokudashinnosuke/obsidian-tag-organizer@v1
+      - uses: tokku5552/obsidian-tag-organizer@v0.1.0
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           target-folder: 'notes'
@@ -113,7 +113,7 @@ For more detailed information about development and contributing, please see [CO
 ### Basic Usage
 
 ```yaml
-- uses: tokudashinnosuke/obsidian-tag-organizer@v1
+- uses: tokku5552/obsidian-tag-organizer@v0.1.0
   with:
     openai-api-key: ${{ secrets.OPENAI_API_KEY }}
 ```
@@ -121,7 +121,7 @@ For more detailed information about development and contributing, please see [CO
 ### Customized Example
 
 ```yaml
-- uses: tokudashinnosuke/obsidian-tag-organizer@v1
+- uses: tokku5552/obsidian-tag-organizer@v0.1.0
   with:
     openai-api-key: ${{ secrets.OPENAI_API_KEY }}
     target-folder: 'my-notes'
@@ -139,7 +139,7 @@ For more detailed information about development and contributing, please see [CO
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## Contributing
 
