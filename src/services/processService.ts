@@ -147,7 +147,8 @@ export async function processFile(
   }
 
   if (changes.length > 0) {
-    const originalFrontMatterStr = originalFrontMatter.toString();
+    const match = content.match(/^---\n([\s\S]*?)\n---/);
+    const originalFrontMatterStr = match ? match[1] : '';
 
     const updatedFrontMatterStr = originalFrontMatterStr.replace(
       /^tags:.*$/m,

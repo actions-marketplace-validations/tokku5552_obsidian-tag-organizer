@@ -119,7 +119,8 @@ async function processFile(filePath, content, originalFrontMatter, openai, forbi
         });
     }
     if (changes.length > 0) {
-        const originalFrontMatterStr = originalFrontMatter.toString();
+        const match = content.match(/^---\n([\s\S]*?)\n---/);
+        const originalFrontMatterStr = match ? match[1] : '';
         const updatedFrontMatterStr = originalFrontMatterStr.replace(/^tags:.*$/m, `tags:\n${Array.from(newTags)
             .map((tag) => `  - "${tag}"`)
             .join('\n')}`);

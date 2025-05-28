@@ -56,7 +56,7 @@ function parseInputs() {
     const forbiddenTags = parseYamlList(core.getInput('forbidden-tags'));
     const model = core.getInput('model') || 'gpt-4';
     const temperature = parseFloat(core.getInput('temperature') || '0.7');
-    const skipInvalidFrontmatter = core.getBooleanInput('skip-invalid-frontmatter') || false;
+    const skipInvalidFrontmatter = core.getBooleanInput('skip-invalid-frontmatter') || true;
     const inputs = {
         openaiApiKey,
         targetFolder,

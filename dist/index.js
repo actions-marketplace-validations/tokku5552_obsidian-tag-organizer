@@ -38926,7 +38926,7 @@ var require_config = __commonJS({
       const forbiddenTags = parseYamlList(core.getInput("forbidden-tags"));
       const model = core.getInput("model") || "gpt-4";
       const temperature = parseFloat(core.getInput("temperature") || "0.7");
-      const skipInvalidFrontmatter = core.getBooleanInput("skip-invalid-frontmatter") || false;
+      const skipInvalidFrontmatter = core.getBooleanInput("skip-invalid-frontmatter") || true;
       const inputs = {
         openaiApiKey,
         targetFolder,
@@ -39247,7 +39247,8 @@ var require_processService = __commonJS({
         });
       }
       if (changes.length > 0) {
-        const originalFrontMatterStr = originalFrontMatter.toString();
+        const match = content.match(/^---\n([\s\S]*?)\n---/);
+        const originalFrontMatterStr = match ? match[1] : "";
         const updatedFrontMatterStr = originalFrontMatterStr.replace(/^tags:.*$/m, `tags:
 ${Array.from(newTags).map((tag) => `  - "${tag}"`).join("\n")}`);
         const newContent = content.replace(/^---\n([\s\S]*?)\n---/m, `---
