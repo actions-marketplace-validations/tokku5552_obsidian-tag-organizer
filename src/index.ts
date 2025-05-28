@@ -1,6 +1,9 @@
 import { OpenAI } from 'openai';
 import { parseInputs } from './config';
-import { getFileList, getTargetFiles, processFile } from './services/processService';
+import { getAllFiles, getTargetFiles } from './services/fileService';
+import { analyzeContentWithAI } from './infrastructure/openai';
+import { replaceFrontMatter } from './services/frontMatterService';
+import { tagOrganizer } from './services/tagService';
 
 async function main(): Promise<void> {
   try {
@@ -16,34 +19,45 @@ async function main(): Promise<void> {
     console.log(`Skip invalid front matter: ${inputs.skipInvalidFrontmatter}\n`);
 
     // ファイル一覧を取得
-    const files = await getFileList(inputs.targetFolder, inputs.excludeFolders);
+    const filePaths = await getAllFiles(inputs.targetFolder, inputs.excludeFolders);
 
     // 対象ファイルの特定
-    const targetFiles = await getTargetFiles(files, inputs.skipInvalidFrontmatter);
+    const targetFiles = await getTargetFiles(filePaths, inputs.skipInvalidFrontmatter);
 
     // ファイルのタグ更新
     let prosessedFileCount = 0;
     const MAX_FILES = 5;
     let reachedMaxFiles = false;
     for (const targetFile of targetFiles) {
-      const changes = await processFile(
-        targetFile.filePath,
+      const suggestions = await analyzeContentWithAI(
         targetFile.content,
-        targetFile.originalFrontMatter,
         openai,
         inputs.forbiddenTags,
         inputs.model,
         inputs.temperature
       );
-      prosessedFileCount++;
-      if (prosessedFileCount >= MAX_FILES) {
-        reachedMaxFiles = true;
-        break;
+
+      if (!suggestions) {
+        console.log(`No suggestions for ${targetFile.filePath}`);
+        continue;
       }
-      if (changes && changes.length > 0) {
-        changes.forEach((change) => {
-          console.log(`${change.file}: ${change.oldTag} -> ${change.newTag}`);
+
+      const newTags = tagOrganizer(
+        targetFile.filePath,
+        targetFile.originalFrontMatter,
+        suggestions
+      );
+
+      if (newTags && newTags.length > 0) {
+        await replaceFrontMatter(targetFile.filePath, targetFile.content, newTags);
+        newTags.forEach((newTag) => {
+          console.log(`${targetFile.filePath}: ${newTag}`);
         });
+        prosessedFileCount++;
+        if (prosessedFileCount >= MAX_FILES) {
+          reachedMaxFiles = true;
+          break;
+        }
       } else {
         console.log(`No changes made to ${targetFile.filePath}`);
       }

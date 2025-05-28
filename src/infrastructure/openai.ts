@@ -1,7 +1,7 @@
 import { OpenAI } from 'openai';
 import yaml from 'js-yaml';
 import { TagSuggestion } from '../types';
-import { extractFrontMatter } from './frontMatterService';
+import { extractFrontMatter } from '../services/frontMatterService';
 
 export async function analyzeContentWithAI(
   content: string,
