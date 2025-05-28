@@ -8,22 +8,21 @@ export async function analyzeContentWithAI(
   content: string,
   inputs: ActionInputs
 ): Promise<TagSuggestion[] | null> {
-  const { forbiddenTags, model, temperature } = inputs;
-  const maxContentLength = 4000;
+  const { forbiddenTags, model, temperature, maxContentLength, maxTags } = inputs;
   const truncatedContent =
     content.length > maxContentLength ? content.substring(0, maxContentLength) + '...' : content;
 
   const frontMatter = extractFrontMatter(content);
   const existingTags = frontMatter?.tags || [];
-  const remainingSlots = 5 - existingTags.length;
+  const remainingSlots = maxTags - existingTags.length;
 
   if (remainingSlots <= 0) {
-    console.log('File already has 5 or more tags, skipping AI analysis');
+    console.log(`File already has ${maxTags} or more tags, skipping AI analysis`);
     return null;
   }
 
   const prompt = `
-Please analyze the following text and suggest ${remainingSlots} additional tags to reach a total of 5 tags.
+Please analyze the following text and suggest ${remainingSlots} additional tags to reach a total of ${maxTags} tags.
 The text currently has the following tags: ${existingTags.join(', ')}
 
 Tag rules:
@@ -49,8 +48,7 @@ tags:
       messages: [
         {
           role: 'system',
-          content:
-            'You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text. You must respond with ONLY a YAML object in the specified format.',
+          content: `You are a text analysis expert. Your task is to suggest additional tags to reach a total of ${maxTags} tags for the given text. You must respond with ONLY a YAML object in the specified format.`,
         },
         {
           role: 'user',
@@ -86,7 +84,6 @@ tags:
         .slice(0, remainingSlots);
 
       return newTags.map((t) => ({
-        original: '',
         suggested: t.name,
         reason: t.reason,
       }));

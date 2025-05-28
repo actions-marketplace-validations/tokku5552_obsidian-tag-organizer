@@ -35,7 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const globals_1 = require("@jest/globals");
 const core = __importStar(require("@actions/core"));
-const config_1 = require("../config");
+const config_1 = require("./config");
 globals_1.jest.mock('@actions/core');
 describe('parseInputs', () => {
     beforeEach(() => {

@@ -29,6 +29,18 @@ inputs:
     description: 'Skip files with invalid front matter instead of failing (default: "true")'
     required: false
     default: 'true'
+  max-tags:
+    description: 'Maximum number of tags to add (default: 5)'
+    required: false
+    default: '5'
+  max-files:
+    description: 'Maximum number of files to process (default: 5)'
+    required: false
+    default: '5'
+  max-content-length:
+    description: 'Maximum content length to analyze (default: 4000)'
+    required: false
+    default: '4000'
 
 runs:
   using: 'node20'

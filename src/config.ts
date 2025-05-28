@@ -21,6 +21,9 @@ export function parseInputs(): ActionInputs {
   const model = core.getInput('model') || 'gpt-4';
   const temperature = parseFloat(core.getInput('temperature') || '0.7');
   const skipInvalidFrontmatter = core.getBooleanInput('skip-invalid-frontmatter') || true;
+  const maxTags = parseInt(core.getInput('max-tags') || '5');
+  const maxFiles = parseInt(core.getInput('max-files') || '5');
+  const maxContentLength = parseInt(core.getInput('max-content-length') || '4000');
 
   const inputs: ActionInputs = {
     openaiApiKey,
@@ -30,6 +33,9 @@ export function parseInputs(): ActionInputs {
     model,
     temperature,
     skipInvalidFrontmatter,
+    maxTags,
+    maxFiles,
+    maxContentLength,
   };
 
   validateInputs(inputs);
@@ -49,26 +55,3 @@ function validateInputs(inputs: ActionInputs): void {
     throw new Error('Model must be either gpt-3.5-turbo or gpt-4');
   }
 }
-
-export const DEFAULT_CONFIG = {
-  maxTokens: 2000,
-  maxRetries: 3,
-  retryDelay: 1000,
-  supportedFileExtensions: ['.md'],
-  tagPattern: /#[\w-]+/g,
-  /**
-   * Default target folders for tag organization.
-   * These folders are processed recursively for tag updates.
-   */
-  targetFolders: ['Clippings', 'Daily', 'Zettelkasten'],
-  /**
-   * Folders to exclude from tag organization.
-   * These folders and their contents will be skipped.
-   */
-  excludeFolders: ['Template'],
-  /**
-   * Tags that should not be used or suggested.
-   * These tags are considered system tags and should not be modified.
-   */
-  forbiddenTags: ['TODO', 'ROUTINE', 'JOURNAL', 'STUDY', 'EXERCISE'],
-};

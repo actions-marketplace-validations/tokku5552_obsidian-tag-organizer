@@ -5,7 +5,6 @@ export interface FrontMatter {
 }
 
 export interface TagSuggestion {
-  original: string;
   suggested: string;
   reason: string;
 }
@@ -18,6 +17,9 @@ export interface ActionInputs {
   model: string;
   temperature: number;
   skipInvalidFrontmatter: boolean;
+  maxTags: number;
+  maxFiles: number;
+  maxContentLength: number;
 }
 
 export interface TargetFile {

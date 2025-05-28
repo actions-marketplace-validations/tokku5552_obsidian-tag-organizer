@@ -3,12 +3,6 @@ import { ActionInputs, FrontMatter, TargetFile } from '../types';
 import { readFile, readDirectory, joinPath } from '../infrastructure/files';
 import { extractFrontMatter } from './frontMatterService';
 
-/**
- * ファイル一覧を取得
- * @param dirPath ディレクトリパス
- * @param excludeFolders 除外フォルダ
- * @returns ファイル一覧
- */
 export async function getAllFiles(props: ActionInputs): Promise<string[]> {
   const { targetFolder, excludeFolders } = props;
   const entries = await readDirectory(targetFolder);
@@ -33,7 +27,6 @@ export async function getAllFiles(props: ActionInputs): Promise<string[]> {
   return files;
 }
 
-// 処理対象ファイルの抽出
 export async function getTargetFiles(
   filePaths: string[],
   skipInvalidFrontmatter: boolean

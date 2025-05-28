@@ -5,19 +5,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.analyzeContentWithAI = analyzeContentWithAI;
 const js_yaml_1 = __importDefault(require("js-yaml"));
-const frontMatterService_1 = require("./frontMatterService");
-async function analyzeContentWithAI(content, openai, forbiddenTags, model, temperature) {
-    const maxContentLength = 4000;
+const frontMatterService_1 = require("../services/frontMatterService");
+async function analyzeContentWithAI(openai, content, inputs) {
+    const { forbiddenTags, model, temperature, maxContentLength, maxTags } = inputs;
     const truncatedContent = content.length > maxContentLength ? content.substring(0, maxContentLength) + '...' : content;
     const frontMatter = (0, frontMatterService_1.extractFrontMatter)(content);
     const existingTags = frontMatter?.tags || [];
-    const remainingSlots = 5 - existingTags.length;
+    const remainingSlots = maxTags - existingTags.length;
     if (remainingSlots <= 0) {
-        console.log('File already has 5 or more tags, skipping AI analysis');
+        console.log(`File already has ${maxTags} or more tags, skipping AI analysis`);
         return null;
     }
     const prompt = `
-Please analyze the following text and suggest ${remainingSlots} additional tags to reach a total of 5 tags.
+Please analyze the following text and suggest ${remainingSlots} additional tags to reach a total of ${maxTags} tags.
 The text currently has the following tags: ${existingTags.join(', ')}
 
 Tag rules:
@@ -42,7 +42,7 @@ tags:
             messages: [
                 {
                     role: 'system',
-                    content: 'You are a text analysis expert. Your task is to suggest additional tags to reach a total of 5 tags for the given text. You must respond with ONLY a YAML object in the specified format.',
+                    content: `You are a text analysis expert. Your task is to suggest additional tags to reach a total of ${maxTags} tags for the given text. You must respond with ONLY a YAML object in the specified format.`,
                 },
                 {
                     role: 'user',
@@ -73,7 +73,6 @@ tags:
                 .filter((t) => !existingTags.includes(t.name))
                 .slice(0, remainingSlots);
             return newTags.map((t) => ({
-                original: '',
                 suggested: t.name,
                 reason: t.reason,
             }));

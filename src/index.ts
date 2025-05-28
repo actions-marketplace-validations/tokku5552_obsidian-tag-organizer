@@ -26,7 +26,7 @@ async function main(): Promise<void> {
 
     // ファイルのタグ更新
     let prosessedFileCount = 0;
-    const MAX_FILES = 5;
+
     let reachedMaxFiles = false;
     for (const targetFile of targetFiles) {
       const suggestions = await analyzeContentWithAI(openai, targetFile.content, inputs);
@@ -44,7 +44,7 @@ async function main(): Promise<void> {
           console.log(`${targetFile.filePath}: ${newTag}`);
         });
         prosessedFileCount++;
-        if (prosessedFileCount >= MAX_FILES) {
+        if (prosessedFileCount >= inputs.maxFiles) {
           reachedMaxFiles = true;
           break;
         }
@@ -53,7 +53,7 @@ async function main(): Promise<void> {
       }
     }
     if (reachedMaxFiles) {
-      console.log(`\nReached maximum file limit (${MAX_FILES}). Stopping processing.`);
+      console.log(`\nReached maximum file limit (${inputs.maxFiles}). Stopping processing.`);
     }
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
