@@ -39144,133 +39144,116 @@ var require_processService = __commonJS({
       return mod && mod.__esModule ? mod : { "default": mod };
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.getFileList = getFileList;
+    exports2.getTargetFiles = getTargetFiles;
     exports2.processFile = processFile;
-    exports2.processDirectory = processDirectory;
     var js_yaml_1 = __importDefault(require_js_yaml());
     var fileService_1 = require_fileService();
     var frontMatterService_1 = require_frontMatterService();
     var aiService_1 = require_aiService();
-    async function processFile(filePath, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter) {
-      const content = await (0, fileService_1.readFile)(filePath);
-      if (!content)
-        return null;
-      if (filePath.toLowerCase().includes("readme.md")) {
-        console.log(`Skipping ${filePath} as it is a README file`);
-        return null;
-      }
-      try {
-        const frontMatter = (0, frontMatterService_1.extractFrontMatter)(content);
-        if (!frontMatter) {
-          if (skipInvalidFrontmatter) {
-            console.log(`Skipping ${filePath} due to invalid front matter`);
-            return null;
-          }
-          throw new Error(`Invalid front matter in ${filePath}`);
-        }
-        const match = content.match(/^---\n([\s\S]*?)\n---/);
-        if (!match) {
-          if (skipInvalidFrontmatter) {
-            console.log(`Skipping ${filePath} due to missing front matter delimiters`);
-            return null;
-          }
-          throw new Error(`Missing front matter delimiters in ${filePath}`);
-        }
-        let originalFrontMatter;
-        try {
-          originalFrontMatter = js_yaml_1.default.load(match[1]);
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Unknown error";
-          if (skipInvalidFrontmatter) {
-            console.log(`Skipping ${filePath} due to YAML parsing error: ${errorMessage}`);
-            return null;
-          }
-          throw new Error(`YAML parsing error in ${filePath}: ${errorMessage}`);
-        }
-        if (originalFrontMatter.tags && originalFrontMatter.tags.length >= 5) {
-          console.log(`Skipping ${filePath} as it already has 5 or more tags`);
-          return null;
-        }
-        const suggestions = await (0, aiService_1.analyzeContentWithAI)(content, openai, forbiddenTags, model, temperature);
-        if (!suggestions)
-          return null;
-        const uniqueOriginalTags = Array.from(new Set(originalFrontMatter.tags || []));
-        const remainingSlots = 5 - uniqueOriginalTags.length;
-        if (remainingSlots <= 0) {
-          console.log(`Skipping ${filePath} as it already has 5 or more tags`);
-          return null;
-        }
-        const uniqueSuggestions = Array.from(new Set(suggestions.map((s) => s.suggested))).map((suggested) => suggestions.find((s) => s.suggested === suggested)).filter((suggestion) => !uniqueOriginalTags.includes(suggestion.suggested)).slice(0, remainingSlots);
-        const newTags = new Set(uniqueSuggestions.slice(0, 5).map((s) => s.suggested));
-        const changes = Array.from(newTags).map((tag) => ({
-          file: filePath,
-          oldTag: "",
-          newTag: tag
-        }));
-        for (const suggestion of uniqueSuggestions) {
-          if (newTags.size >= 5)
-            break;
-          newTags.add(suggestion.suggested);
-          changes.push({
-            file: filePath,
-            oldTag: "",
-            newTag: suggestion.suggested
-          });
-        }
-        if (changes.length > 0) {
-          const originalFrontMatterStr = match[1];
-          const updatedFrontMatterStr = originalFrontMatterStr.replace(/^tags:.*$/m, `tags:
-${Array.from(newTags).map((tag) => `  - "${tag}"`).join("\n")}`);
-          const newContent = content.replace(/^---\n([\s\S]*?)\n---/m, `---
-${updatedFrontMatterStr}
----`);
-          await (0, fileService_1.writeFile)(filePath, newContent);
-        }
-        return changes;
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
-        if (skipInvalidFrontmatter) {
-          console.log(`Skipping ${filePath} due to error: ${errorMessage}`);
-          return null;
-        }
-        throw error;
-      }
-    }
-    async function processDirectory(dirPath, excludeFolders, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter) {
-      const changes = [];
+    async function getFileList(dirPath, excludeFolders) {
       const entries = await (0, fileService_1.readDirectory)(dirPath);
-      let processedFileCount = 0;
-      const MAX_FILES = 5;
-      let reachedMaxFiles = false;
+      const files = [];
       for (const entry of entries) {
         const fullPath = (0, fileService_1.joinPath)(dirPath, entry.name);
         if (entry.isDirectory()) {
           if (!excludeFolders.includes(entry.name)) {
-            const subChanges = await processDirectory(fullPath, excludeFolders, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter);
-            changes.push(...subChanges);
-            processedFileCount += subChanges.length;
+            const subFiles = await getFileList(fullPath, excludeFolders);
+            files.push(...subFiles);
           }
         } else if (entry.isFile() && entry.name.endsWith(".md")) {
-          try {
-            const fileChanges = await processFile(fullPath, openai, forbiddenTags, model, temperature, skipInvalidFrontmatter);
-            if (fileChanges) {
-              changes.push(...fileChanges);
-              processedFileCount++;
-            }
-          } catch (error) {
-            if (!skipInvalidFrontmatter) {
-              throw error;
-            }
-            console.error(`Error processing ${fullPath}:`, error);
-          }
-        }
-        if (processedFileCount >= MAX_FILES) {
-          reachedMaxFiles = true;
-          break;
+          files.push(fullPath);
         }
       }
-      if (reachedMaxFiles) {
-        console.log(`
-Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
+      return files;
+    }
+    async function getTargetFiles(filePaths, skipInvalidFrontmatter) {
+      const targetFiles = [];
+      for (const filePath of filePaths) {
+        const content = await (0, fileService_1.readFile)(filePath);
+        if (!content) {
+          console.log(`Skipping ${filePath} due to missing content`);
+          continue;
+        }
+        try {
+          const frontMatter = (0, frontMatterService_1.extractFrontMatter)(content);
+          if (!frontMatter) {
+            if (skipInvalidFrontmatter) {
+              console.log(`Skipping ${filePath} due to invalid front matter`);
+              continue;
+            }
+            throw new Error(`Invalid front matter in ${filePath}`);
+          }
+          const match = content.match(/^---\n([\s\S]*?)\n---/);
+          if (!match) {
+            if (skipInvalidFrontmatter) {
+              console.log(`Skipping ${filePath} due to missing front matter delimiters`);
+              continue;
+            }
+            throw new Error(`Missing front matter delimiters in ${filePath}`);
+          }
+          let originalFrontMatter;
+          try {
+            originalFrontMatter = js_yaml_1.default.load(match[1]);
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+            if (skipInvalidFrontmatter) {
+              console.log(`Skipping ${filePath} due to YAML parsing error: ${errorMessage}`);
+              continue;
+            }
+            throw new Error(`YAML parsing error in ${filePath}: ${errorMessage}`);
+          }
+          if (originalFrontMatter.tags && originalFrontMatter.tags.length >= 5) {
+            console.log(`Skipping ${filePath} as it already has 5 or more tags`);
+            continue;
+          }
+          targetFiles.push({ filePath, content, originalFrontMatter });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : "Unknown error";
+          if (skipInvalidFrontmatter) {
+            console.log(`Skipping ${filePath} due to error: ${errorMessage}`);
+            continue;
+          }
+          throw error;
+        }
+      }
+      return targetFiles;
+    }
+    async function processFile(filePath, content, originalFrontMatter, openai, forbiddenTags, model, temperature) {
+      const suggestions = await (0, aiService_1.analyzeContentWithAI)(content, openai, forbiddenTags, model, temperature);
+      if (!suggestions)
+        return null;
+      const uniqueOriginalTags = Array.from(new Set(originalFrontMatter.tags || []));
+      const remainingSlots = 5 - uniqueOriginalTags.length;
+      if (remainingSlots <= 0) {
+        console.log(`Skipping ${filePath} as it already has 5 or more tags`);
+        return null;
+      }
+      const uniqueSuggestions = Array.from(new Set(suggestions.map((s) => s.suggested))).map((suggested) => suggestions.find((s) => s.suggested === suggested)).filter((suggestion) => !uniqueOriginalTags.includes(suggestion.suggested)).slice(0, remainingSlots);
+      const newTags = new Set(uniqueSuggestions.slice(0, 5).map((s) => s.suggested));
+      const changes = Array.from(newTags).map((tag) => ({
+        file: filePath,
+        oldTag: "",
+        newTag: tag
+      }));
+      for (const suggestion of uniqueSuggestions) {
+        if (newTags.size >= 5)
+          break;
+        newTags.add(suggestion.suggested);
+        changes.push({
+          file: filePath,
+          oldTag: "",
+          newTag: suggestion.suggested
+        });
+      }
+      if (changes.length > 0) {
+        const originalFrontMatterStr = originalFrontMatter.toString();
+        const updatedFrontMatterStr = originalFrontMatterStr.replace(/^tags:.*$/m, `tags:
+${Array.from(newTags).map((tag) => `  - "${tag}"`).join("\n")}`);
+        const newContent = content.replace(/^---\n([\s\S]*?)\n---/m, `---
+${updatedFrontMatterStr}
+---`);
+        await (0, fileService_1.writeFile)(filePath, newContent);
       }
       return changes;
     }
@@ -39294,20 +39277,29 @@ async function main() {
     console.log(`Forbidden tags: ${inputs.forbiddenTags.join(", ")}`);
     console.log(`Skip invalid front matter: ${inputs.skipInvalidFrontmatter}
 `);
-    const changes = await (0, processService_1.processDirectory)(inputs.targetFolder, inputs.excludeFolders, openai, inputs.forbiddenTags, inputs.model, inputs.temperature, inputs.skipInvalidFrontmatter);
-    if (changes.length > 0) {
-      console.log("\nTag changes made:");
-      changes.forEach((change) => {
-        console.log(`${change.file}: ${change.oldTag} -> ${change.newTag}`);
-      });
-      process.exit(0);
-    } else {
-      console.log("\nNo files needed tag updates. All files either:");
-      console.log("- Already have 5 or more tags");
-      console.log("- Have invalid front matter (and skip-invalid-frontmatter is true)");
-      console.log("- Are README files");
-      console.log("- Could not be processed due to other issues");
-      process.exit(0);
+    const files = await (0, processService_1.getFileList)(inputs.targetFolder, inputs.excludeFolders);
+    const targetFiles = await (0, processService_1.getTargetFiles)(files, inputs.skipInvalidFrontmatter);
+    let prosessedFileCount = 0;
+    const MAX_FILES = 5;
+    let reachedMaxFiles = false;
+    for (const targetFile of targetFiles) {
+      const changes = await (0, processService_1.processFile)(targetFile.filePath, targetFile.content, targetFile.originalFrontMatter, openai, inputs.forbiddenTags, inputs.model, inputs.temperature);
+      prosessedFileCount++;
+      if (prosessedFileCount >= MAX_FILES) {
+        reachedMaxFiles = true;
+        break;
+      }
+      if (changes && changes.length > 0) {
+        changes.forEach((change) => {
+          console.log(`${change.file}: ${change.oldTag} -> ${change.newTag}`);
+        });
+      } else {
+        console.log(`No changes made to ${targetFile.filePath}`);
+      }
+    }
+    if (reachedMaxFiles) {
+      console.log(`
+Reached maximum file limit (${MAX_FILES}). Stopping processing.`);
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
