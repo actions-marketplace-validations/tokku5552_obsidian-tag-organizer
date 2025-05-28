@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { FrontMatter } from '../types';
+import { FrontMatter, TargetFile } from '../types';
 import { writeFile } from '../infrastructure/files';
 
 export function extractFrontMatter(content: string): FrontMatter | null {
@@ -25,11 +25,8 @@ export function updateFrontMatter(content: string, newTags: string[]): string {
   return content.replace(match[0], `---\n${newFrontMatter}---`);
 }
 
-export async function replaceFrontMatter(
-  filePath: string,
-  content: string,
-  newTags: string[]
-): Promise<void> {
+export async function replaceFrontMatter(targetFile: TargetFile, newTags: string[]): Promise<void> {
+  const { content, filePath } = targetFile;
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   const originalFrontMatterStr = match ? match[1] : '';
 

@@ -4,28 +4,10 @@ export interface FrontMatter {
   [key: string]: string | string[] | number | boolean | undefined;
 }
 
-export interface Tag {
-  name: string;
-  count: number;
-  files: string[];
-}
-
-export interface FileContent {
-  path: string;
-  content: string;
-  tags: string[];
-}
-
 export interface TagSuggestion {
   original: string;
   suggested: string;
   reason: string;
-}
-
-export interface TagChange {
-  file: string;
-  oldTag: string;
-  newTag: string;
 }
 
 export interface ActionInputs {
@@ -36,4 +18,10 @@ export interface ActionInputs {
   model: string;
   temperature: number;
   skipInvalidFrontmatter: boolean;
+}
+
+export interface TargetFile {
+  filePath: string;
+  content: string;
+  originalFrontMatter: FrontMatter;
 }

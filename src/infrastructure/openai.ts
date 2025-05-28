@@ -1,15 +1,14 @@
 import { OpenAI } from 'openai';
 import yaml from 'js-yaml';
-import { TagSuggestion } from '../types';
+import { ActionInputs, TagSuggestion } from '../types';
 import { extractFrontMatter } from '../services/frontMatterService';
 
 export async function analyzeContentWithAI(
-  content: string,
   openai: OpenAI,
-  forbiddenTags: string[],
-  model: string,
-  temperature: number
+  content: string,
+  inputs: ActionInputs
 ): Promise<TagSuggestion[] | null> {
+  const { forbiddenTags, model, temperature } = inputs;
   const maxContentLength = 4000;
   const truncatedContent =
     content.length > maxContentLength ? content.substring(0, maxContentLength) + '...' : content;

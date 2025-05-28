@@ -19,7 +19,7 @@ async function main(): Promise<void> {
     console.log(`Skip invalid front matter: ${inputs.skipInvalidFrontmatter}\n`);
 
     // ファイル一覧を取得
-    const filePaths = await getAllFiles(inputs.targetFolder, inputs.excludeFolders);
+    const filePaths = await getAllFiles(inputs);
 
     // 対象ファイルの特定
     const targetFiles = await getTargetFiles(filePaths, inputs.skipInvalidFrontmatter);
@@ -29,27 +29,17 @@ async function main(): Promise<void> {
     const MAX_FILES = 5;
     let reachedMaxFiles = false;
     for (const targetFile of targetFiles) {
-      const suggestions = await analyzeContentWithAI(
-        targetFile.content,
-        openai,
-        inputs.forbiddenTags,
-        inputs.model,
-        inputs.temperature
-      );
+      const suggestions = await analyzeContentWithAI(openai, targetFile.content, inputs);
 
       if (!suggestions) {
         console.log(`No suggestions for ${targetFile.filePath}`);
         continue;
       }
 
-      const newTags = tagOrganizer(
-        targetFile.filePath,
-        targetFile.originalFrontMatter,
-        suggestions
-      );
+      const newTags = tagOrganizer(targetFile, suggestions);
 
       if (newTags && newTags.length > 0) {
-        await replaceFrontMatter(targetFile.filePath, targetFile.content, newTags);
+        await replaceFrontMatter(targetFile, newTags);
         newTags.forEach((newTag) => {
           console.log(`${targetFile.filePath}: ${newTag}`);
         });

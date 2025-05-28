@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { FrontMatter } from '../types';
+import { ActionInputs, FrontMatter, TargetFile } from '../types';
 import { readFile, readDirectory, joinPath } from '../infrastructure/files';
 import { extractFrontMatter } from './frontMatterService';
 
@@ -9,16 +9,20 @@ import { extractFrontMatter } from './frontMatterService';
  * @param excludeFolders 除外フォルダ
  * @returns ファイル一覧
  */
-export async function getAllFiles(dirPath: string, excludeFolders: string[]): Promise<string[]> {
-  const entries = await readDirectory(dirPath);
+export async function getAllFiles(props: ActionInputs): Promise<string[]> {
+  const { targetFolder, excludeFolders } = props;
+  const entries = await readDirectory(targetFolder);
   const files: string[] = [];
 
   for (const entry of entries) {
-    const fullPath = joinPath(dirPath, entry.name);
+    const fullPath = joinPath(targetFolder, entry.name);
 
     if (entry.isDirectory()) {
       if (!excludeFolders.includes(entry.name)) {
-        const subFiles = await getAllFiles(fullPath, excludeFolders);
+        const subFiles = await getAllFiles({
+          ...props,
+          targetFolder: fullPath,
+        });
         files.push(...subFiles);
       }
     } else if (entry.isFile() && entry.name.endsWith('.md')) {
@@ -33,8 +37,8 @@ export async function getAllFiles(dirPath: string, excludeFolders: string[]): Pr
 export async function getTargetFiles(
   filePaths: string[],
   skipInvalidFrontmatter: boolean
-): Promise<{ filePath: string; content: string; originalFrontMatter: FrontMatter }[]> {
-  const targetFiles: { filePath: string; content: string; originalFrontMatter: FrontMatter }[] = [];
+): Promise<TargetFile[]> {
+  const targetFiles: TargetFile[] = [];
 
   for (const filePath of filePaths) {
     const content = await readFile(filePath);

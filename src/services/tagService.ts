@@ -1,10 +1,10 @@
-import { FrontMatter, TagSuggestion } from '../types';
+import { TagSuggestion, TargetFile } from '../types';
 
 export function tagOrganizer(
-  filePath: string,
-  originalFrontMatter: FrontMatter,
+  targetFile: TargetFile,
   suggestions: TagSuggestion[]
 ): string[] | null {
+  const { originalFrontMatter, filePath } = targetFile;
   const uniqueOriginalTags = Array.from(new Set(originalFrontMatter.tags || []));
 
   const remainingSlots = 5 - uniqueOriginalTags.length;

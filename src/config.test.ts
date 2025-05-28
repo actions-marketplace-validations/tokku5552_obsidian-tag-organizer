@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import * as core from '@actions/core';
-import { parseInputs } from '../config';
+import { parseInputs } from './config';
 
 jest.mock('@actions/core');
 
