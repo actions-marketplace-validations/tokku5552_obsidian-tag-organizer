@@ -1,6 +1,6 @@
 import yaml from 'js-yaml';
+import { joinPath, readDirectory, readFile } from '../infrastructure/files';
 import { ActionInputs, FrontMatter, TargetFile } from '../types';
-import { readFile, readDirectory, joinPath } from '../infrastructure/files';
 import { extractFrontMatter } from './frontMatterService';
 
 export async function getAllFiles(props: ActionInputs): Promise<string[]> {
